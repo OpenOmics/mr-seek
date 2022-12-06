@@ -15,12 +15,19 @@ from scripts.common import (
     str_bool
 )
 
+configfile: 'config.json'
+exposure = config['options']['exposure']
+outcome = config['options']['outcome']
+workpath = config['project']['workpath']       # Pipeline's output directory
+tmpdir = config['options']['tmp_dir']
+threshold = 0.01
 
 # Final ouput files of the pipeline
 rule all:
     input:
-        []
+        join(workpath, "mr", "res_single.csv")
 
 
 # Import rules 
 include: join("rules", "common.smk")
+include: join("rules", "mr.smk")

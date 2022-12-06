@@ -85,18 +85,19 @@ def sym_safe(input_data, target):
     @return input_fastqs list[<str>]:
         List of renamed input FastQs
     """
-    input_fastqs = [] # store renamed fastq file names
+    input_files = [] # store renamed fastq file names
     for file in input_data:
         filename = os.path.basename(file)
-        renamed = os.path.join(target, rename(filename))
-        input_fastqs.append(renamed)
+        input_files.append(filename)
+        renamed = os.path.join(target, filename)
+        input_files.append(renamed)
 
         if not exists(renamed):
             # Create a symlink if it does not already exist
             # Follow source symlinks to resolve any binding issues
             os.symlink(os.path.abspath(os.path.realpath(file)), renamed)
 
-    return input_fastqs
+    return input_files
 
 
 def rename(filename):
@@ -459,14 +460,15 @@ def add_rawdata_information(sub_args, config, ifiles):
     # or single-end
     # Updates config['project']['nends'] where
     # 1 = single-end, 2 = paired-end, -1 = bams
-    convert = {1: 'single-end', 2: 'paired-end', -1: 'bam'}
-    nends = get_nends(ifiles)  # Checks PE data for both mates (R1 and R2)
-    config['project']['nends'] = nends
-    config['project']['filetype'] = convert[nends]
+    #convert = {1: 'single-end', 2: 'paired-end', -1: 'bam'}
+    #nends = get_nends(ifiles)  # Checks PE data for both mates (R1 and R2)
+    #config['project']['nends'] = nends
+    #config['project']['filetype'] = convert[nends]
 
     # Finds the set of rawdata directories to bind
-    rawdata_paths = get_rawdata_bind_paths(input_files = sub_args.input)
-    config['project']['datapath'] = ','.join(rawdata_paths)
+    rawdata_paths_exposure = get_rawdata_bind_paths(input_files = sub_args.exposure)
+    rawdata_paths_outcome = get_rawdata_bind_paths(input_files = sub_args.outcome)
+    config['project']['datapath'] = ','.join(rawdata_paths_exposure + rawdata_paths_outcome)
 
     # Add each sample's basename
     config = add_sample_metadata(input_files = ifiles, config = config)

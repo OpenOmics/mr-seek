@@ -107,7 +107,7 @@ def run(sub_args):
     input_files = init(
         repo_path = git_repo,
         output_path = sub_args.output,
-        links = sub_args.input
+        links = sub_args.exposure + [sub_args.outcome]
     )
 
     # Step 2. Setup pipeline for execution, 
@@ -255,13 +255,15 @@ def parsed_arguments(name, description):
         directory to store results.
 
         {3}{4}Required arguments:{5}
-          --input INPUT [INPUT ...]
-                                Input FastQ file(s) to process. The pipeline does NOT
-                                support single-end data. FastQ files for one or more  
-                                samples can be provided. Multiple input FastQ files
-                                should be seperated by a space. Globbing for multiple
+          --exposure EXPOSURE [EXPOSURE ...]
+                                Exposure file(s) to process. The file should be either a
+                                a list of exposures available in a database or exposure
+                                file(s) to read and process. If the input is not being
+                                extracted from a database then the additional flag
+                                should be used to define the type of exposure it is.
+                                Globbing for multiple
                                 file is also supported.
-                                  Example: --input .tests/*.R?.fastq.gz
+                                  Example: --exposure eQTL.csv
           --output OUTPUT
                                 Path to an output directory. This location is where
                                 the pipeline will create all of its output files, also
@@ -385,13 +387,31 @@ def parsed_arguments(name, description):
     )
 
     # Required Arguments
-    # Input FastQ files
+    # Input Exposure
     subparser_run.add_argument(
-        '--input',
+        '--exposure',
         # Check if the file exists and if it is readable
         type = lambda file: permissions(parser, file, os.R_OK),
         required = True,
         nargs = '+',
+        help = argparse.SUPPRESS
+    )
+
+    # Input Outcome
+    subparser_run.add_argument(
+        '--outcome',
+        # Check if the file exists and if it is readable
+        type = lambda file: permissions(parser, file, os.R_OK),
+        required = True,
+        help = argparse.SUPPRESS
+    )
+
+    subparser_run.add_argument(
+        '--input_qtl',
+        choices=['eqtl', 'mqtl', 'pqtl'],
+        type = str.lower,
+        required = False,
+        default = None,
         help = argparse.SUPPRESS
     )
 
