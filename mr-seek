@@ -49,13 +49,14 @@ from src.utils import (
     hashed,
     permissions,
     check_cache,
-    require)
+    require
+)
 
 
 # Pipeline Metadata
 __version__ = version
-__authors__ = 'Skyler Kuhn'
-__email__ = 'skyler.kuhn@nih.gov'
+__authors__ = 'Vicky Chen'
+__email__ = 'vicky.chen@nih.gov'
 __home__  =  os.path.dirname(os.path.abspath(__file__))
 _name = os.path.basename(sys.argv[0])
 _description = 'An awesome mendelian randomization pipeline'

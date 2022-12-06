@@ -2,7 +2,7 @@
 site_name: mr-seek
 site_author: Skyler Kuhn
 site_description: >-
-  An awesome OpenOmics mr-seek pipeline
+  An awesome Mendelian randomization pipeline
 
 # Repository
 repo_name: OpenOmics/mr-seek
