@@ -1,14 +1,27 @@
 #ml R/4.2.0
 library(remotes)
+library(optparse)
 library(TwoSampleMR)
+library(data.table)
 
-args<-commandArgs(TRUE)
-workdir <- args[1]
-exp_file <- args[2]
-out_file <- args[3]
-#exp_flag <- args[4]
+option_list <- list(
+  make_option(c("-w", "--workdir"), type='character', action='store', default=NA,
+    help="Path to the working directory"),
+  make_option(c("-e", "--exp"), type='character', action='store', default=NA,
+    help="Exposure file"),
+  make_option(c("-o", "--out"), type='character', action='store', default=NA,
+    help="Outcome file"),
+  make_option(c("-p", "--pop"), type='character', action='store', default="EUR",
+    help="Reference super-population"),
+  make_option(c("-f", "--exp_flag"), type='character', action='store', default=NA,
+    help="Format for exposure file"),
+  make_option(c("-d", "--database"), type='character', action='store', default=NA,
+    help="Database to download gwas from")
+)
 
-exp <- read.table(exp_file, header=TRUE, sep=',')
+opt <- parse_args(OptionParser(option_list=option_list))
+
+exp <- read.table(opt$exp, header=TRUE, sep=',')
 #Will exposure data be pulled in from the instruments existing catalogue?
 #MRInstruments package?
 if (dim(exp)[[2]] == 1) {
@@ -23,40 +36,61 @@ if (dim(exp)[[2]] == 1) {
     access_token = ieugwasr::check_access_token(), #Google OAuth2 access token. Used to authenticate level of access to data. The default is ieugwasr::check_access_token()
     force_server = FALSE #Force the analysis to extract results from the server rather than the MRInstruments package
   )
-}else {
+}else if (opt$exp_flag == "pqtl") {
   exp$Chromosome <- sapply(exp[,1], function(x) strsplit(x, ':')[[1]][[1]])
   exp$hg37_genpos <- sapply(exp[,1], function(x) strsplit(x, ':')[[1]][[2]])
   exp$A0 <- sapply(exp[,1], function(x) strsplit(x, ':')[[1]][[3]])
   exp$A1 <- sapply(exp[,1], function(x) strsplit(x, ':')[[1]][[4]])
-  
-  exposure_dat <- format_data(exp, type="exposure", 
+
+  exposure_dat <- format_data(exp, type="exposure",
                               snp_col = "rsID",
                               beta_col = "BETA_discovery",
                               se_col = "SE_discovery",
                               eaf_col = "A1FREQ_discovery",
                               effect_allele_col = "A1",
                               other_allele_col = "A0")
-  
+  exposure_dat$id.exposure <- tools::file_path_sans_ext(basename(opt$exp))
 }
 
-out <- read.table(out_file, header=TRUE)
-if (dim(out)[[2]] == 1) {
-  # Get effects of instruments on outcome
-  outcome_dat = extract_outcome_data(
-    snps = exposure_dat$SNP, # Array of SNP rs IDs.
-    outcomes = c("ieu-a-7", "ieu-a-10"), # Array of IDs (see id column in output from available_outcomes).
-    proxies = TRUE, # Look for LD tags? Default is TRUE
-    rsq = 0.8, #Minimum LD rsq value (if proxies = 1). Default = 0.8
-    align_alleles = 1, #Try to align tag alleles to target alleles (if proxies = 1). 1 = yes, 0 = no. The default is 1
-    palindromes = 1, #Allow palindromic SNPs (if proxies = 1). 1 = yes, 0 = no. The default is 1
-    maf_threshold = 0.3, #MAF threshold to try to infer palindromic SNPs. The default is 0.3
-    access_token = ieugwasr::check_access_token(), #Google OAuth2 access token. Used to authenticate level of access to data.
-    splitsize = 10000,
-    proxy_splitsize = 500
-  )
+if (opt$database == 'neale'){
+  outcome_dat <- c()
+  files <- strsplit(opt$out, ',')[[1]]
+  print(files)
+  for (filename in files) {
+    data <- fread(filename)
+    print(filename)
+    #save.image('test.RData')
+    out_data <- format_data(data, type="outcome", snp_col="rsid",
+        beta_col=paste0("beta_", opt$pop), se_col=paste0("se_", opt$pop),
+        eaf_col=paste0("af_", opt$pop), effect_allele_col="alt",
+        other_allele_col="ref", pval_col = paste0("pval_", opt$pop),
+        log_pval=TRUE)
+    #print(head(out_data))
+    out_data$outcome <- strsplit(basename(filename), '\\.')[[1]][[1]]
+    out_data$id.outcome <- strsplit(basename(filename), '\\.')[[1]][[1]]
+    outcome_dat <- rbind(outcome_dat, out_data)
+  }
+} else {
+  out <- read.table(out_file, header=TRUE)
+  if (dim(out)[[2]] == 1) {
+    # Get effects of instruments on outcome
+    outcome_dat = extract_outcome_data(
+      snps = exposure_dat$SNP, # Array of SNP rs IDs.
+      outcomes = c("ieu-a-7", "ieu-a-10"), # Array of IDs (see id column in output from available_outcomes).
+      proxies = TRUE, # Look for LD tags? Default is TRUE
+      rsq = 0.8, #Minimum LD rsq value (if proxies = 1). Default = 0.8
+      align_alleles = 1, #Try to align tag alleles to target alleles (if proxies = 1). 1 = yes, 0 = no. The default is 1
+      palindromes = 1, #Allow palindromic SNPs (if proxies = 1). 1 = yes, 0 = no. The default is 1
+      maf_threshold = 0.3, #MAF threshold to try to infer palindromic SNPs. The default is 0.3
+      access_token = ieugwasr::check_access_token(), #Google OAuth2 access token. Used to authenticate level of access to data.
+      splitsize = 10000,
+      proxy_splitsize = 500
+    )
+  }
 }
 
-setwd(workdir)
+
+setwd(opt$workdir)
 
 # Harmonise the exposure and outcome data
 dat <- harmonise_data(
@@ -67,6 +101,15 @@ dat <- harmonise_data(
             #  action = 2: Try to infer positive strand alleles, using allele frequencies for palindromes (default, conservative);
             #  action = 3: Correct strand for non-palindromic SNPs, and drop all palindromic SNPs from the analysis (more conservative). If a single value is passed then this action is applied to all outcomes.
             # But multiple values can be supplied as a vector, each element relating to a different outcome.
+
+#clumped <- clump_data(
+#  dat,
+#  clump_kb = 10000,
+#  clump_r2 = 0.001,
+#  clump_p1 = 1,
+#  clump_p2 = 1,
+#  pop = pop
+#)
 
 # Perform MR
 res <- mr(dat, #Harmonised exposure and outcome data. Output from harmonise_data.

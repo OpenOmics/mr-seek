@@ -406,6 +406,7 @@ def parsed_arguments(name, description):
         help = argparse.SUPPRESS
     )
 
+    # Exposure format
     subparser_run.add_argument(
         '--input_qtl',
         choices=['eqtl', 'mqtl', 'pqtl'],
@@ -415,12 +416,32 @@ def parsed_arguments(name, description):
         help = argparse.SUPPRESS
     )
 
+    # Population
+    subparser_run.add_argument(
+        '--pop',
+        choices=['AFR', 'AMR', 'CSA', 'EAS', 'EUR', 'MID'],
+        type = str.upper,
+        required = False,
+        default = 'EUR',
+        help = argparse.SUPPRESS
+    )
+
     # Output Directory, i.e 
     # working directory
     subparser_run.add_argument(
         '--output',
         type = lambda option: os.path.abspath(os.path.expanduser(option)),
         required = True,
+        help = argparse.SUPPRESS
+    )
+
+    # Database 
+    subparser_run.add_argument(
+        '--database',
+        choices=['ieu', 'neale'],
+        type = str.lower,
+        required = False,
+        default = None,
         help = argparse.SUPPRESS
     )
 

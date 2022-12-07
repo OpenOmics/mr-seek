@@ -10,7 +10,7 @@ from snakemake.utils import R
 # Local imports
 from scripts.common import (
     allocated,
-    provided, 
+    provided,
     references,
     str_bool
 )
@@ -20,6 +20,17 @@ exposure = config['options']['exposure']
 outcome = config['options']['outcome']
 workpath = config['project']['workpath']       # Pipeline's output directory
 tmpdir = config['options']['tmp_dir']
+population = config['options']['pop']
+if 'input_qtl' in config['options']:
+    input_format = config['options']['input_qtl']
+else:
+    input_format = None
+
+if 'database' in config['options']:
+    database = config['options']['database']
+else:
+    database = None
+
 threshold = 0.01
 
 # Final ouput files of the pipeline
@@ -28,6 +39,6 @@ rule all:
         join(workpath, "mr", "res_single.csv")
 
 
-# Import rules 
+# Import rules
 include: join("rules", "common.smk")
 include: join("rules", "mr.smk")
