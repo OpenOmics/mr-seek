@@ -16,7 +16,9 @@ option_list <- list(
   make_option(c("-f", "--exp_flag"), type='character', action='store', default=NA,
     help="Format for exposure file"),
   make_option(c("-d", "--database"), type='character', action='store', default=NA,
-    help="Database to download gwas from")
+    help="Database to download gwas from"),
+  make_option(c("-c", "--clump"), action='store_true', default=FALSE,
+    help="Run clumping on harmonised data")
 )
 
 opt <- parse_args(OptionParser(option_list=option_list))
@@ -24,7 +26,20 @@ opt <- parse_args(OptionParser(option_list=option_list))
 exp <- read.table(opt$exp, header=TRUE, sep=',')
 #Will exposure data be pulled in from the instruments existing catalogue?
 #MRInstruments package?
-if (dim(exp)[[2]] == 1) {
+if (opt$exp_flag == "pqtl") {
+  addition <- as.data.frame(stringr::str_split(exp[,1], ':', simplify = T))[,1:4]
+  colnames(addition) <- c("Chromosome", "hg37_genpos", "A0", "A1")
+  exp <- cbind(exp, addition)
+
+  exposure_dat <- format_data(exp, type="exposure",
+                              snp_col = "rsID",
+                              beta_col = "BETA_discovery",
+                              se_col = "SE_discovery",
+                              eaf_col = "A1FREQ_discovery",
+                              effect_allele_col = "A1",
+                              other_allele_col = "A0")
+  exposure_dat$id.exposure <- tools::file_path_sans_ext(basename(opt$exp))
+}else if (dim(exp)[[2]] == 1) {
   # Get instruments or SNPs: This function searches for GWAS significant SNPs (for a given p-value) for a specified set of outcomes. It then performs LD based clumping to return only independent significant associations.
   exposure_dat = extract_instruments(
     outcomes = exp[[1]], # Array of outcome IDs (see available_outcomes)
@@ -36,20 +51,8 @@ if (dim(exp)[[2]] == 1) {
     access_token = ieugwasr::check_access_token(), #Google OAuth2 access token. Used to authenticate level of access to data. The default is ieugwasr::check_access_token()
     force_server = FALSE #Force the analysis to extract results from the server rather than the MRInstruments package
   )
-}else if (opt$exp_flag == "pqtl") {
-  exp$Chromosome <- sapply(exp[,1], function(x) strsplit(x, ':')[[1]][[1]])
-  exp$hg37_genpos <- sapply(exp[,1], function(x) strsplit(x, ':')[[1]][[2]])
-  exp$A0 <- sapply(exp[,1], function(x) strsplit(x, ':')[[1]][[3]])
-  exp$A1 <- sapply(exp[,1], function(x) strsplit(x, ':')[[1]][[4]])
-
-  exposure_dat <- format_data(exp, type="exposure",
-                              snp_col = "rsID",
-                              beta_col = "BETA_discovery",
-                              se_col = "SE_discovery",
-                              eaf_col = "A1FREQ_discovery",
-                              effect_allele_col = "A1",
-                              other_allele_col = "A0")
-  exposure_dat$id.exposure <- tools::file_path_sans_ext(basename(opt$exp))
+} else {
+  stop("Current exposure input format not handled, please double-check input or reach out for assistance")
 }
 
 if (opt$database == 'neale'){
@@ -76,7 +79,7 @@ if (opt$database == 'neale'){
     # Get effects of instruments on outcome
     outcome_dat = extract_outcome_data(
       snps = exposure_dat$SNP, # Array of SNP rs IDs.
-      outcomes = c("ieu-a-7", "ieu-a-10"), # Array of IDs (see id column in output from available_outcomes).
+      outcomes = out[[1]], # Array of IDs (see id column in output from available_outcomes).
       proxies = TRUE, # Look for LD tags? Default is TRUE
       rsq = 0.8, #Minimum LD rsq value (if proxies = 1). Default = 0.8
       align_alleles = 1, #Try to align tag alleles to target alleles (if proxies = 1). 1 = yes, 0 = no. The default is 1
@@ -102,14 +105,17 @@ dat <- harmonise_data(
             #  action = 3: Correct strand for non-palindromic SNPs, and drop all palindromic SNPs from the analysis (more conservative). If a single value is passed then this action is applied to all outcomes.
             # But multiple values can be supplied as a vector, each element relating to a different outcome.
 
-#clumped <- clump_data(
-#  dat,
-#  clump_kb = 10000,
-#  clump_r2 = 0.001,
-#  clump_p1 = 1,
-#  clump_p2 = 1,
-#  pop = pop
-#)
+if (opt$clump) {
+  dat <- clump_data(
+    dat,
+    clump_kb = 10000,
+    clump_r2 = 0.001,
+    clump_p1 = 1,
+    clump_p2 = 1,
+    pop = opt$pop
+  )
+}
+
 
 # Perform MR
 res <- mr(dat, #Harmonised exposure and outcome data. Output from harmonise_data.
