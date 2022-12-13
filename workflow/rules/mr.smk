@@ -4,6 +4,8 @@ def mr_flags(wildcards):
         flags.append(f"--exp_flag {input_format}")
     if database != None:
         flags.append(f"--database {database}")
+    if clump == 'True':
+        flags.append(f"--clump")
     return(' '.join(flags))
 
 def mr_outcome_input(wildcards):

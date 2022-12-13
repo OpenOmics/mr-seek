@@ -86,6 +86,14 @@ Each of the following arguments are optional, and do not need to be provided.
 > ***Example:*** `--database neale`
 
 ---
+`--clump`
+> **Perform clumping on harmonised data**   
+> *type: boolean flag*
+>   
+> Perform clumping on the data. Clumping will be run with the super-population available in the 1000 genomes reference panel.
+>
+> ***Example:*** `--clump`
+
 ### 2.3 Orchestration options
 
 Each of the following arguments are optional, and do not need to be provided.

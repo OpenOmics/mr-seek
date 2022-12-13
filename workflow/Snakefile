@@ -16,11 +16,13 @@ from scripts.common import (
 )
 
 configfile: 'config.json'
+print(config)
 exposure = config['options']['exposure']
 outcome = config['options']['outcome']
 workpath = config['project']['workpath']       # Pipeline's output directory
 tmpdir = config['options']['tmp_dir']
 population = config['options']['pop']
+clump = config['options']['clump']
 if 'input_qtl' in config['options']:
     input_format = config['options']['input_qtl']
 else:

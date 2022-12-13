@@ -298,6 +298,10 @@ def parsed_arguments(name, description):
                                 PAN-UK Biobank through links provided by the Neale lab.
                                 The PAN-UK Biobank data needs to be downloaded and processed.
                                   Example: --database neale
+          --clump 
+                                Perform clumping on the data. Clumping will be run with 
+                                the super-population available in the 1000 genomes reference panel.
+                                  Example: --clump
 
         {3}{4}Orchestration options:{5}
           --mode {{slurm,local}}
@@ -479,6 +483,13 @@ def parsed_arguments(name, description):
         type = str.lower,
         required = False,
         default = None,
+        help = argparse.SUPPRESS
+    )
+
+    # Clumping
+    subparser_run.add_argument(
+        '--clump',
+        action="store_true",
         help = argparse.SUPPRESS
     )
 
