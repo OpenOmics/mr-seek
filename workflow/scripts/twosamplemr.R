@@ -75,7 +75,7 @@ if (opt$database == 'neale'){
     outcome_dat <- rbind(outcome_dat, out_data)
   }
 } else {
-  out <- read.table(out_file, header=TRUE)
+  out <- read.table(opt$out, header=TRUE)
   if (dim(out)[[2]] == 1) {
     # Get effects of instruments on outcome
     outcome_dat = extract_outcome_data(

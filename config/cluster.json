@@ -9,5 +9,8 @@
     "neale_download": {
         "threads": "16",
         "time": "1-00:00:00"
+    },
+    "twosamplemr": {
+        "mem": "100g"
     }
 }
