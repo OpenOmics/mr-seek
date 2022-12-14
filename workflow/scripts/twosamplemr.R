@@ -38,7 +38,9 @@ if (opt$exp_flag == "pqtl") {
                               se_col = "SE_discovery",
                               eaf_col = "A1FREQ_discovery",
                               effect_allele_col = "A1",
-                              other_allele_col = "A0")
+                              other_allele_col = "A0",
+                              chr_col = 'Chromosome',
+                              pos_col = 'hg37_genpos')
   exposure_dat$id.exposure <- tools::file_path_sans_ext(basename(opt$exp))
 }else if (dim(exp)[[2]] == 1) {
   # Get instruments or SNPs: This function searches for GWAS significant SNPs (for a given p-value) for a specified set of outcomes. It then performs LD based clumping to return only independent significant associations.
@@ -56,6 +58,17 @@ if (opt$exp_flag == "pqtl") {
   stop("Current exposure input format not handled, please double-check input or reach out for assistance")
 }
 
+if (opt$clump) {
+  exposure_dat <- clump_data(
+    exposure_dat,
+    clump_kb = 10000,
+    clump_r2 = 0.001,
+    clump_p1 = 1,
+    clump_p2 = 1,
+    pop = opt$pop
+  )
+}
+
 if (opt$database == 'neale'){
   outcome_dat <- c()
   files <- strsplit(opt$out, ',')[[1]]
@@ -63,7 +76,6 @@ if (opt$database == 'neale'){
   for (filename in files) {
     data <- fread(filename)
     print(filename)
-    #save.image('test.RData')
     out_data <- format_data(data, type="outcome", snp_col="rsid",
         beta_col=paste0("beta_", opt$pop), se_col=paste0("se_", opt$pop),
         eaf_col=paste0("af_", opt$pop), effect_allele_col="alt",
@@ -72,7 +84,7 @@ if (opt$database == 'neale'){
     #print(head(out_data))
     out_data$outcome <- strsplit(basename(filename), '\\.')[[1]][[1]]
     out_data$id.outcome <- strsplit(basename(filename), '\\.')[[1]][[1]]
-    outcome_dat <- rbind(outcome_dat, out_data)
+    outcome_dat <- rbind(outcome_dat, out_data[out_data$SNP %in% exposure_dat$SNP,])
   }
 } else {
   out <- read.table(opt$out, header=TRUE)
@@ -105,17 +117,6 @@ dat <- harmonise_data(
             #  action = 2: Try to infer positive strand alleles, using allele frequencies for palindromes (default, conservative);
             #  action = 3: Correct strand for non-palindromic SNPs, and drop all palindromic SNPs from the analysis (more conservative). If a single value is passed then this action is applied to all outcomes.
             # But multiple values can be supplied as a vector, each element relating to a different outcome.
-
-if (opt$clump) {
-  dat <- clump_data(
-    dat,
-    clump_kb = 10000,
-    clump_r2 = 0.001,
-    clump_p1 = 1,
-    clump_p2 = 1,
-    pop = opt$pop
-  )
-}
 
 
 # Perform MR
