@@ -218,6 +218,7 @@ for (i in names(p2)) {
 
 ## Leave one out analysis
 res_loo <- mr_leaveoneout(dat)
+write.table(res_loo, 'res_loo.csv', sep=',', row.names=FALSE)
 dir.create(file.path('leaveoneout'), showWarnings = FALSE)
 p3 <- mr_leaveoneout_plot(res_loo)
 for (i in names(p3)) {
