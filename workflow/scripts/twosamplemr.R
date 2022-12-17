@@ -40,7 +40,9 @@ if (opt$exp_flag == "pqtl") {
                               effect_allele_col = "A1",
                               other_allele_col = "A0",
                               chr_col = 'Chromosome',
-                              pos_col = 'hg37_genpos')
+                              pos_col = 'hg37_genpos',
+                              pval_col = 'log10p_discovery',
+                              log_pval = TRUE)
   exposure_dat$id.exposure <- tools::file_path_sans_ext(basename(opt$exp))
 }else if (dim(exp)[[2]] == 1) {
   # Get instruments or SNPs: This function searches for GWAS significant SNPs (for a given p-value) for a specified set of outcomes. It then performs LD based clumping to return only independent significant associations.
@@ -76,17 +78,17 @@ if (opt$database == 'neale'){
   for (filename in files) {
     data <- fread(filename)
     print(filename)
+    data[[paste0('pval_', opt$pop)]] <- exp(data[[paste0('pval_', opt$pop)]]) 
     out_data <- format_data(data, type="outcome", snp_col="rsid",
         beta_col=paste0("beta_", opt$pop), se_col=paste0("se_", opt$pop),
         eaf_col=paste0("af_", opt$pop), effect_allele_col="alt",
-        other_allele_col="ref", pval_col = paste0("pval_", opt$pop),
-        log_pval=TRUE)
+        other_allele_col="ref", pval_col = paste0("pval_", opt$pop))
     #print(head(out_data))
     out_data$outcome <- strsplit(basename(filename), '\\.')[[1]][[1]]
     out_data$id.outcome <- strsplit(basename(filename), '\\.')[[1]][[1]]
     outcome_dat <- rbind(outcome_dat, out_data[out_data$SNP %in% exposure_dat$SNP,])
   }
-} else {
+} else if (opt$database == 'ieu') {
   out <- read.table(opt$out, header=TRUE)
   if (dim(out)[[2]] == 1) {
     # Get effects of instruments on outcome
