@@ -79,9 +79,13 @@ if (opt$database == 'neale'){
     data <- fread(filename)
     print(filename)
     data[[paste0('pval_', opt$pop)]] <- exp(data[[paste0('pval_', opt$pop)]]) 
+    af <- grep(opt$pop, grep('af', colnames(data), value=TRUE), value=TRUE)
+    if (length(af) == 2) {
+        af <- grep('cases', af, value=TRUE)
+    }
     out_data <- format_data(data, type="outcome", snp_col="rsid",
         beta_col=paste0("beta_", opt$pop), se_col=paste0("se_", opt$pop),
-        eaf_col=paste0("af_", opt$pop), effect_allele_col="alt",
+        eaf_col=paste0(af), effect_allele_col="alt",
         other_allele_col="ref", pval_col = paste0("pval_", opt$pop))
     #print(head(out_data))
     out_data$outcome <- strsplit(basename(filename), '\\.')[[1]][[1]]
