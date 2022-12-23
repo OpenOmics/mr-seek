@@ -76,6 +76,7 @@ if (opt$database == 'neale'){
   files <- strsplit(opt$out, ',')[[1]]
   print(files)
   for (filename in files) {
+    try({
     data <- fread(filename)
     print(filename)
     data[[paste0('pval_', opt$pop)]] <- exp(data[[paste0('pval_', opt$pop)]]) 
@@ -91,7 +92,7 @@ if (opt$database == 'neale'){
     out_data$outcome <- strsplit(basename(filename), '\\.')[[1]][[1]]
     out_data$id.outcome <- strsplit(basename(filename), '\\.')[[1]][[1]]
     outcome_dat <- rbind(outcome_dat, out_data[out_data$SNP %in% exposure_dat$SNP,])
-  }
+  })}
 } else if (opt$database == 'ieu') {
   out <- read.table(opt$out, header=TRUE)
   if (dim(out)[[2]] == 1) {

@@ -41,10 +41,10 @@ rule neale_download:
     shell:
       """
       cd {params.tmpdir}
-      wget https://pan-ukb-us-east-1.s3.amazonaws.com/sumstats_flat_files/{params.sample}.tsv.bgz
-      python3 {params.snp_script} -o {params.sample}.convert.tsv -i {params.sample}.tsv.bgz -t {params.threshold} -p {params.population} --filter
-      module load VEP/108; vep -i {params.sample}.convert.tsv -o {params.sample}.vep.tsv --offline --cache --dir_cache /fdb/VEP/108/cache --assembly GRCh37 --pick --check_existing --fork {params.threads}
-      python3 {params.rsid_script} -o {params.gwas} -i filter.{params.sample}.convert.tsv.gz -v {params.sample}.vep.tsv
+      wget https://pan-ukb-us-east-1.s3.amazonaws.com/sumstats_flat_files/{params.sample}.tsv.bgz &&
+      python3 {params.snp_script} -o {params.sample}.convert.tsv -i {params.sample}.tsv.bgz -t {params.threshold} -p {params.population} --filter &&
+      module load VEP/108; vep -i {params.sample}.convert.tsv -o {params.sample}.vep.tsv --offline --cache --dir_cache /fdb/VEP/108/cache --assembly GRCh37 --pick --check_existing --fork {params.threads} &&
+      python3 {params.rsid_script} -o {params.gwas} -i filter.{params.sample}.convert.tsv.gz -v {params.sample}.vep.tsv || touch {output.gwas} {workpath}/{params.sample}.error
       """
 
 rule twosamplemr:
