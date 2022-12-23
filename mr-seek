@@ -493,6 +493,15 @@ def parsed_arguments(name, description):
         help = argparse.SUPPRESS
     )
 
+    # P-value threshold to filter SNPs in outcome files
+    subparser_run.add_argument(
+        '--outcome_pval_threshold',
+        type = float,
+        required = False,
+        default = None,
+        help = argparse.SUPPRESS
+    )
+
     # Orchestration Options
     # Execution Method, run locally
     # on a compute node or submit to

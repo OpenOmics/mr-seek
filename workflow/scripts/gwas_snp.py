@@ -1,5 +1,13 @@
 import os, gzip, argparse, math
 
+def threshold_import(x):
+    if x == 'None':
+        return 'None'
+    try:
+        x = float(x)
+    except ValueError:
+        raise argparse.ArgumentTypeError("%r not a floating-point literal" % (x,))
+    return x
 
 def main(raw_args=None):
     parser = argparse.ArgumentParser(description="""Take GWAS data and extract the SNPS in preparation for RSID calls. If a threshold is included then SNPs will be filtered by threshold""")
@@ -10,7 +18,7 @@ def main(raw_args=None):
         action = "store", type=str, required=True,
         help="Input GWAS files")
     parser.add_argument("-t", "--threshold", metavar="0.01",
-        action = "store", type=float, default=None,
+        action = "store", type=threshold_import, default=None,
         help="P-Value threshold to filter the SNPs by"),
     parser.add_argument("-p", "--population", metavar="EUR",
         action = "store", type=str, choices=["AFR", "AMR", "CSA", "EAS", "EUR", "MID"],
