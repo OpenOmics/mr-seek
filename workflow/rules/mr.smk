@@ -58,7 +58,7 @@ rule twosamplemr:
     params:
         rname = "twosamplemr",
         outdir = join(workpath, "mr"),
-        exposure = exposure,
+        exposure = ','.join(exposure),
         outcome = mr_outcome_flag,
         pop_flag = population,
         add_flag = mr_flags,
@@ -68,7 +68,7 @@ rule twosamplemr:
         """
         Rscript {params.script} \\
             --workdir {params.outdir} \\
-            --exp {input.exposure} \\
+            --exp {params.exposure} \\
             --out {params.outcome} \\
             --pop {params.pop_flag} \\
             {params.add_flag} \\
