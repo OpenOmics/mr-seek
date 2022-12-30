@@ -25,7 +25,7 @@ def main(raw_args=None):
         default="EUR")
     parser.add_argument("--filter",
         action = "store_true", required = False,
-        default = False)
+        default = False, help="Output a full filtered tsv.gz file")
     args = parser.parse_args(raw_args)
 
     col_headers = {'chr': 'chr', 'pos': 'pos', 'ref': 'ref', 'alt': 'alt', 'pval': f"pval_{args.population}"}
