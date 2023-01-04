@@ -64,8 +64,7 @@ rule neale_preprocess:
       """
       cd {params.tmpdir}
       python3 {params.snp_script} -o {params.sample}.convert.tsv -i {params.neale_path}/{params.sample}.tsv.bgz -t {params.threshold} -p {params.population} --filter &&
-      module load VEP/108; vep -i {params.sample}.convert.tsv -o {params.sample}.vep.tsv --offline --cache --dir_cache /fdb/VEP/108/cache --assembly GRCh37 --pick --check_existing --fork {params.threads} &&
-      python3 {params.rsid_script} -o {params.gwas} -i filter.{params.sample}.convert.tsv.gz -v {params.sample}.vep.tsv || touch {output.gwas} {workpath}/{params.sample}.error
+      mv filter.{params.sample}.convert.tsv.gz {output.gwas} || touch {output.gwas} {workpath}/{params.sample}.error
       """
 
 
