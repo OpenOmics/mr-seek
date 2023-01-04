@@ -32,7 +32,10 @@ if 'database' in config['options']:
 else:
     database = None
 
-threshold = 0.01
+if 'outcome_pval_threshold' in config['options']:
+    threshold = config['options']['outcome_pval_threshold']
+else:
+    threshold = None
 
 # Final ouput files of the pipeline
 rule all:

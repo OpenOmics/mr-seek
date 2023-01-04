@@ -4,6 +4,7 @@ library(remotes)
 library(optparse)
 library(TwoSampleMR)
 library(data.table)
+library(dplyr)
 
 option_list <- list(
   make_option(c("-w", "--workdir"), type='character', action='store', default=NA,
@@ -24,40 +25,51 @@ option_list <- list(
 
 opt <- parse_args(OptionParser(option_list=option_list))
 
-exp <- read.table(opt$exp, header=TRUE, sep=',')
-#Will exposure data be pulled in from the instruments existing catalogue?
-#MRInstruments package?
-if (opt$exp_flag == "pqtl") {
-  addition <- as.data.frame(stringr::str_split(exp[,1], ':', simplify = T))[,1:4]
-  colnames(addition) <- c("Chromosome", "hg37_genpos", "A0", "A1")
-  exp <- cbind(exp, addition)
+process_exposure <- function(x) {
+  exp <- read.table(x, header=TRUE, sep=',')
+  #Will exposure data be pulled in from the instruments existing catalogue?
+  #MRInstruments package?
+  if (opt$exp_flag == "pqtl") {
+    addition <- as.data.frame(stringr::str_split(exp[,1], ':', simplify = T))[,1:4]
+    colnames(addition) <- c("Chromosome", "hg37_genpos", "A0", "A1")
+    exp <- cbind(exp, addition)
 
-  exposure_dat <- format_data(exp, type="exposure",
-                              snp_col = "rsID",
-                              beta_col = "BETA_discovery",
-                              se_col = "SE_discovery",
-                              eaf_col = "A1FREQ_discovery",
-                              effect_allele_col = "A1",
-                              other_allele_col = "A0",
-                              chr_col = 'Chromosome',
-                              pos_col = 'hg37_genpos',
-                              pval_col = 'log10p_discovery',
-                              log_pval = TRUE)
-  exposure_dat$id.exposure <- tools::file_path_sans_ext(basename(opt$exp))
-}else if (dim(exp)[[2]] == 1) {
-  # Get instruments or SNPs: This function searches for GWAS significant SNPs (for a given p-value) for a specified set of outcomes. It then performs LD based clumping to return only independent significant associations.
-  exposure_dat = extract_instruments(
-    outcomes = exp[[1]], # Array of outcome IDs (see available_outcomes)
-    p1 = 5e-08, # Significance threshold. The default is 5e-8
-    clump = TRUE, # Logical; whether to clump results. The default is TRUE
-    p2 = 5e-08, # Secondary clumping threshold. The default is 5e-8
-    r2 = 0.001, # Clumping r2 cut off. The default is 0.001
-    kb = 10000, # Clumping distance cutoff. The default is 10000
-    access_token = ieugwasr::check_access_token(), #Google OAuth2 access token. Used to authenticate level of access to data. The default is ieugwasr::check_access_token()
-    force_server = FALSE #Force the analysis to extract results from the server rather than the MRInstruments package
-  )
-} else {
-  stop("Current exposure input format not handled, please double-check input or reach out for assistance")
+    exposure_dat <- format_data(exp, type="exposure",
+                                snp_col = "rsID",
+                                beta_col = "BETA_discovery",
+                                se_col = "SE_discovery",
+                                eaf_col = "A1FREQ_discovery",
+                                effect_allele_col = "A1",
+                                other_allele_col = "A0",
+                                chr_col = 'Chromosome',
+                                pos_col = 'hg37_genpos',
+                                pval_col = 'log10p_discovery',
+                                log_pval = TRUE)
+    exposure_dat$id.exposure <- tools::file_path_sans_ext(basename(x))
+  }else if (dim(exp)[[2]] == 1) {
+    # Get instruments or SNPs: This function searches for GWAS significant SNPs (for a given p-value) for a specified set of outcomes. It then performs LD based clumping to return only independent significant associations.
+    exposure_dat = extract_instruments(
+      outcomes = exp[[1]], # Array of outcome IDs (see available_outcomes)
+      p1 = 5e-08, # Significance threshold. The default is 5e-8
+      clump = TRUE, # Logical; whether to clump results. The default is TRUE
+      p2 = 5e-08, # Secondary clumping threshold. The default is 5e-8
+      r2 = 0.001, # Clumping r2 cut off. The default is 0.001
+      kb = 10000, # Clumping distance cutoff. The default is 10000
+      access_token = ieugwasr::check_access_token(), #Google OAuth2 access token. Used to authenticate level of access to data. The default is ieugwasr::check_access_token()
+      force_server = FALSE #Force the analysis to extract results from the server rather than the MRInstruments package
+    )
+  } else {
+    stop("Current exposure input format not handled, please double-check input or reach out for assistance")
+  }
+  return(exposure_dat)
+}
+
+
+exp_files <- strsplit(opt$exp, ',')[[1]]
+exp_files <- unique(exp_files)
+exposure_dat <- c()
+for (filename in exp_files) {
+  exposure_dat <- rbind(exposure_dat, process_exposure(filename))
 }
 
 if (opt$clump) {
@@ -71,19 +83,33 @@ if (opt$clump) {
   )
 }
 
+exp_snp_list <- list()
+exp_snp_list$rsid <- exposure_dat$SNP
+exp_snp_list$custom <- tolower(paste(exposure_dat$chr.exposure, exposure_dat$pos.exposure, exposure_dat$other_allele.exposure, exposure_dat$effect_allele.exposure, sep='_'))
+exp_snp_list <- as.data.frame(exp_snp_list)
+exp_snp_list <- exp_snp_list %>%  distinct(.keep_all = TRUE)
+
+if (opt$database == 'neale'){
+  rownames(exp_snp_list) <- exp_snp_list$rsid
+  exposure_dat$SNP <- exp_snp_list[exposure_dat$SNP,'custom']
+}
+
 if (opt$database == 'neale'){
   outcome_dat <- c()
   files <- strsplit(opt$out, ',')[[1]]
+  files <- unique(files)
   print(files)
   for (filename in files) {
+    try({
     data <- fread(filename)
     print(filename)
-    data[[paste0('pval_', opt$pop)]] <- exp(data[[paste0('pval_', opt$pop)]]) 
+    data[[paste0('pval_', opt$pop)]] <- exp(data[[paste0('pval_', opt$pop)]])
     af <- grep(opt$pop, grep('af', colnames(data), value=TRUE), value=TRUE)
     if (length(af) == 2) {
         af <- grep('cases', af, value=TRUE)
     }
-    out_data <- format_data(data, type="outcome", snp_col="rsid",
+    data$custom_id <- paste(data$chr, data$pos, data$ref, data$alt, sep='_')
+    out_data <- format_data(data, type="outcome", snp_col="custom_id", #snp_col="rsid",
         beta_col=paste0("beta_", opt$pop), se_col=paste0("se_", opt$pop),
         eaf_col=paste0(af), effect_allele_col="alt",
         other_allele_col="ref", pval_col = paste0("pval_", opt$pop))
@@ -91,7 +117,7 @@ if (opt$database == 'neale'){
     out_data$outcome <- strsplit(basename(filename), '\\.')[[1]][[1]]
     out_data$id.outcome <- strsplit(basename(filename), '\\.')[[1]][[1]]
     outcome_dat <- rbind(outcome_dat, out_data[out_data$SNP %in% exposure_dat$SNP,])
-  }
+  })}
 } else if (opt$database == 'ieu') {
   out <- read.table(opt$out, header=TRUE)
   if (dim(out)[[2]] == 1) {
@@ -111,7 +137,6 @@ if (opt$database == 'neale'){
   }
 }
 
-
 setwd(opt$workdir)
 
 # Harmonise the exposure and outcome data
@@ -124,6 +149,11 @@ dat <- harmonise_data(
             #  action = 3: Correct strand for non-palindromic SNPs, and drop all palindromic SNPs from the analysis (more conservative). If a single value is passed then this action is applied to all outcomes.
             # But multiple values can be supplied as a vector, each element relating to a different outcome.
 
+
+if (opt$database == 'neale'){
+  rownames(exp_snp_list) <- exp_snp_list$custom
+  dat$SNP <- exp_snp_list[dat$SNP, 'rsid']
+}
 
 # Perform MR
 res <- mr(dat, #Harmonised exposure and outcome data. Output from harmonise_data.

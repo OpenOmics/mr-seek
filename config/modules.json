@@ -1,5 +1,8 @@
 {
     "tools": {
         "r4": "R/4.2.0"
+    },
+    "database": {
+       "neale": "/data/NHLBI_IDSS/database/mr-seek-db/neale"
     }
 }
