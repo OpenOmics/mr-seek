@@ -4,6 +4,7 @@ library(remotes)
 library(optparse)
 library(TwoSampleMR)
 library(data.table)
+library(dplyr)
 
 option_list <- list(
   make_option(c("-w", "--workdir"), type='character', action='store', default=NA,
@@ -82,6 +83,17 @@ if (opt$clump) {
   )
 }
 
+exp_snp_list <- list()
+exp_snp_list$rsid <- exposure_dat$SNP
+exp_snp_list$custom <- tolower(paste(exposure_dat$chr.exposure, exposure_dat$pos.exposure, exposure_dat$other_allele.exposure, exposure_dat$effect_allele.exposure, sep='_'))
+exp_snp_list <- as.data.frame(exp_snp_list)
+exp_snp_list <- exp_snp_list %>%  distinct(.keep_all = TRUE)
+
+if (opt$database == 'neale'){
+  rownames(exp_snp_list) <- exp_snp_list$rsid
+  exposure_dat$SNP <- exp_snp_list[exposure_dat$SNP,'custom']
+}
+
 if (opt$database == 'neale'){
   outcome_dat <- c()
   files <- strsplit(opt$out, ',')[[1]]
@@ -96,7 +108,8 @@ if (opt$database == 'neale'){
     if (length(af) == 2) {
         af <- grep('cases', af, value=TRUE)
     }
-    out_data <- format_data(data, type="outcome", snp_col="rsid",
+    data$custom_id <- paste(data$chr, data$pos, data$ref, data$alt, sep='_')
+    out_data <- format_data(data, type="outcome", snp_col="custom_id", #snp_col="rsid",
         beta_col=paste0("beta_", opt$pop), se_col=paste0("se_", opt$pop),
         eaf_col=paste0(af), effect_allele_col="alt",
         other_allele_col="ref", pval_col = paste0("pval_", opt$pop))
@@ -124,7 +137,6 @@ if (opt$database == 'neale'){
   }
 }
 
-
 setwd(opt$workdir)
 
 # Harmonise the exposure and outcome data
@@ -137,6 +149,11 @@ dat <- harmonise_data(
             #  action = 3: Correct strand for non-palindromic SNPs, and drop all palindromic SNPs from the analysis (more conservative). If a single value is passed then this action is applied to all outcomes.
             # But multiple values can be supplied as a vector, each element relating to a different outcome.
 
+
+if (opt$database == 'neale'){
+  rownames(exp_snp_list) <- exp_snp_list$custom
+  dat$SNP <- exp_snp_list[dat$SNP, 'rsid']
+}
 
 # Perform MR
 res <- mr(dat, #Harmonised exposure and outcome data. Output from harmonise_data.
