@@ -73,7 +73,9 @@ rule twosamplemr:
         exposure = exposure,
         outcome = mr_outcome_input
     output:
-        rds = join(workpath, "mr", "res_single.csv")
+        single = join(workpath, "mr", "res_single.csv"),
+        res = join(workpath, "mr", "res.csv"),
+        data = join(workpath, "mr", "harmonised_dat.csv")
     log:
         join(workpath, "mr", "twosamplemr.log")
     params:
@@ -94,4 +96,26 @@ rule twosamplemr:
             --pop {params.pop_flag} \\
             {params.add_flag} \\
          > {log} 2>&1
+        """
+
+rule rds_plot:
+    input:
+        single = rules.twosamplemr.output.single,
+        res = rules.twosamplemr.output.res,
+        data = rules.twosamplemr.output.data
+    output:
+        rds = join(workpath, "mr", "all_plots.rds")
+    log:
+        join(workpath, "mr", "rds_plot.log")
+    params:
+        rname = "rds_plot",
+        script = join(workpath, "workflow", "scripts", "codes.R")
+    envmodules: config["tools"]["r4"]
+    shell:
+        """
+        Rscript {params.script} --res {input.res} \\
+            --data {input.data} \\
+            --single {input.single} \\
+            --out {output.rds} \\
+            > {log} 2>&1
         """
