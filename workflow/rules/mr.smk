@@ -48,7 +48,7 @@ def mr_outcome_flag(wildcards):
 #       """
 
 rule neale_preprocess:
-    output: gwas = os.path.join(workpath, "gwas/{sample}.rsid.tsv.gz")
+    output: gwas = temp(os.path.join(workpath, "gwas/{sample}.rsid.tsv.gz"))
     params:
         rname = "neale_preprocess",
         sample = "{sample}",
@@ -63,8 +63,8 @@ rule neale_preprocess:
     shell:
       """
       cd {params.tmpdir}
-      python3 {params.snp_script} -o {params.sample}.convert.tsv -i {params.neale_path}/{params.sample}.tsv.bgz -t {params.threshold} -p {params.population} --filter &&
-      mv filter.{params.sample}.convert.tsv.gz {output.gwas} || touch {output.gwas} {workpath}/{params.sample}.error
+      python3 {params.snp_script} -o "{params.sample}.convert.tsv" -i "{params.neale_path}/{params.sample}.tsv.bgz" -t {params.threshold} -p {params.population} --filter &&
+      mv filter."{params.sample}.convert.tsv.gz" "{output.gwas}" || touch "{output.gwas}" "{workpath}/{params.sample}.error"
       """
 
 
@@ -91,8 +91,8 @@ rule twosamplemr:
         """
         Rscript {params.script} \\
             --workdir {params.outdir} \\
-            --exp {params.exposure} \\
-            --out {params.outcome} \\
+            --exp "{params.exposure}" \\
+            --out "{params.outcome}" \\
             --pop {params.pop_flag} \\
             {params.add_flag} \\
          > {log} 2>&1
