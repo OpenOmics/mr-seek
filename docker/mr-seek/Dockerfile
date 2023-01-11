@@ -14,6 +14,7 @@ LABEL maintainer=kuhnsa@nih.gov
 #    - data.table_1.14.6  (CRAN)
 #    - optparse_1.7.3     (CRAN)
 #    - remotes_2.4.2      (CRAN)
+#    - R.utils            (CRAN)
 #    - TwoSampleMR_0.5.6  (Github: MRCIEU/TwoSampleMR)
 #        @requires: git
 
@@ -96,6 +97,8 @@ RUN apt-get update -qq \
 RUN Rscript -e 'install.packages(c("data.table", "dplyr", "optparse", "remotes", "devtools"), repos="http://cran.r-project.org")'
 # Github packages
 RUN Rscript -e 'devtools::install_github("MRCIEU/TwoSampleMR")'
+# Other R missing packages
+RUN Rscript -e 'install.packages("R.utils")'
 
 ################ POST #################
 # Add Dockerfile and export env variables
