@@ -60,11 +60,12 @@ rule neale_preprocess:
         rsid_script = os.path.join(workpath, 'workflow', 'scripts', 'gwas_fill_rsid.py'),
         neale_path = config["database"]["neale"],
         threads = 16
+    container: config["images"]["mr-base"]
     shell:
       """
       cd {params.tmpdir}
       python3 {params.snp_script} -o "{params.sample}.convert.tsv" -i "{params.neale_path}/{params.sample}.tsv.bgz" -t {params.threshold} -p {params.population} --filter &&
-      mv filter."{params.sample}.convert.tsv.gz" "{output.gwas}" || touch "{output.gwas}" "{workpath}/{params.sample}.error"
+      mv "filter.{params.sample}.convert.tsv.gz" "{output.gwas}" || touch "{output.gwas}" "{workpath}/{params.sample}.error"
       """
 
 
@@ -86,7 +87,7 @@ rule twosamplemr:
         pop_flag = population,
         add_flag = mr_flags,
         script = join(workpath, "workflow", "scripts", "twosamplemr.R")
-    envmodules: config["tools"]["r4"]
+    container: config["images"]["mr-base"]
     shell:
         """
         Rscript {params.script} \\
@@ -110,7 +111,7 @@ rule rds_plot:
     params:
         rname = "rds_plot",
         script = join(workpath, "workflow", "scripts", "codes.R")
-    envmodules: config["tools"]["r4"]
+    container: config["images"]["mr-base"]
     shell:
         """
         Rscript {params.script} --res {input.res} \\
