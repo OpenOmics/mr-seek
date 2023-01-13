@@ -17,14 +17,14 @@
   </a>
 
   <p>
-    This is the home of the pipeline, mr-seek. Its long-term goals: to accurately ...insert goal, to infer ..insert goal, and to boldly ..insert goal like no pipeline before!
+    This is the home of the pipeline, mr-seek. Its long-term goals: to perform Mendelian randomization analysis like no pipeline before!
   </p>
 
 </div>  
 
 
 ## Overview
-Welcome to mr-seek's documentation! This guide is the main source of documentation for users that are getting started with the [long pipeline name](https://github.com/OpenOmics/mr-seek/). 
+Welcome to mr-seek's documentation! This guide is the main source of documentation for users that are getting started with the [Mendelian randomization pipeline](https://github.com/OpenOmics/mr-seek/). 
 
 The **`./mr-seek`** pipeline is composed several inter-related sub commands to setup and run the pipeline across different systems. Each of the available sub commands perform different functions: 
 
@@ -34,7 +34,7 @@ The **`./mr-seek`** pipeline is composed several inter-related sub commands to s
 
 **mr-seek** is a comprehensive mendelian randomization pipeline. It relies on technologies like [Singularity<sup>1</sup>](https://singularity.lbl.gov/) to maintain the highest-level of reproducibility. The pipeline consists of a series of data processing and quality-control steps orchestrated by [Snakemake<sup>2</sup>](https://snakemake.readthedocs.io/en/stable/), a flexible and scalable workflow management system, to submit jobs to a cluster.
 
-The pipeline is compatible with data generated from Illumina short-read sequencing technologies. As input, it accepts a set of FastQ files and can be run locally on a compute instance or on-premise using a cluster. A user can define the method or mode of execution. The pipeline can submit jobs to a cluster using a job scheduler like SLURM (more coming soon!). A hybrid approach ensures the pipeline is accessible to all users.
+The pipeline is compatible with data generated from Illumina short-read sequencing technologies. As input, it accepts a set of QTL files and outcome phenotypes and can be run locally on a compute instance or on-premise using a cluster. A user can define the method or mode of execution. The pipeline can submit jobs to a cluster using a job scheduler like SLURM (more coming soon!). A hybrid approach ensures the pipeline is accessible to all users.
 
 Before getting started, we highly recommend reading through the [usage](usage/run.md) section of each available sub command.
 
@@ -42,7 +42,7 @@ For more information about issues or trouble-shooting a problem, please checkout
 
 ## Contribute 
 
-This site is a living document, created for and by members like you. mr-seek is maintained by the members of NCBR and is improved by continous feedback! We encourage you to contribute new content and make improvements to existing content via pull request to our [GitHub repository :octicons-heart-fill-24:{ .heart }](https://github.com/OpenOmics/mr-seek).
+This site is a living document, created for and by members like you. mr-seek is maintained by the members of NCBR and is improved by continuous feedback! We encourage you to contribute new content and make improvements to existing content via pull request to our [GitHub repository :octicons-heart-fill-24:{ .heart }](https://github.com/OpenOmics/mr-seek).
 
 
 ## References
