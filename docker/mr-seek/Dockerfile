@@ -98,7 +98,7 @@ RUN Rscript -e 'install.packages(c("data.table", "dplyr", "optparse", "remotes",
 # Github packages
 RUN Rscript -e 'devtools::install_github("MRCIEU/TwoSampleMR")'
 # Other R missing packages
-RUN Rscript -e 'install.packages(c("R.utils", "tidyverse"))'
+RUN Rscript -e 'install.packages(c("R.utils", "tidyverse", "ggpubr", "ggsignif", "rstatix"))'
 
 ################ POST #################
 # Add Dockerfile and export env variables
