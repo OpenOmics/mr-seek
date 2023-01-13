@@ -21,7 +21,7 @@ $ mr-seek run [--help] \
 
 The synopsis for each command shows its arguments and their usage. Optional arguments are shown in square brackets.
 
-A user **must** provide a list of exposure and outcome to analyze via `--exposure`  and `--outcome` argument and an output directory to store results via `--output` argument.
+A user **must** provide a list of exposure and outcome to analyze via `--exposure`  and `--outcome` arguments and an output directory to store results via `--output` argument.
 
 Use you can always use the `-h` option for information on a specific command.
 
@@ -63,16 +63,16 @@ Each of the following arguments are optional, and do not need to be provided.
 > **Type of QTL file provided**   
 > *type: string*
 >   
-> When the exposure file is a quantitative trait locus file to process, this flag should be used to define the type of QTL file it is. Valid options are eqtl, mqtl, or pqtl.
+> When the exposure file is a quantitative trait locus file to process, this flag should be used to define the type of QTL file it is. Currently only pqtl format is supported. Work is still being done to support eqtl and mqtl files in the future. Valid options are eqtl, mqtl, or pqtl.
 >
 > ***Example:*** `--input_qtl pqtl`
 
 ---
-`--pop {AFR, AMR, CSA, EAS, EUR, MID}`
+`--pop {AFR, AMR, EAS, EUR}`
 > **Super-population to use**   
 > *type: string*
 >   
-> Super-population to use when extracting data from Neale (PAN-UK BioBank) or when clumping data. Valid options are AFR, AMR, CSA, EAS, EUR, MID. If this option is not provided it will default to EUR.
+> Super-population to use when extracting data from Neale (PAN-UK BioBank) or when clumping data. Currently only populations shared with the 1000 Genomes project is supported. Valid options for this are: AFR, AMR, EAS, EUR. If this option is not provided it will default to EUR.
 >
 > ***Example:*** `--pop EUR`
 
@@ -81,9 +81,18 @@ Each of the following arguments are optional, and do not need to be provided.
 > **Database to use**   
 > *type: string*
 >   
-> Database to extract phenotypes from when a list of phenotypes are provided. The ieu option would extract data for the IEU GWAS database made available through the R package [ieugwasr](https://mrcieu.github.io/ieugwasr/). The neale option would extract data from the [PAN-UK Biobank](https://pan.ukbb.broadinstitute.org) through [Amazon AWS links](https://docs.google.com/spreadsheets/d/1AeeADtT0U1AukliiNyiVzVRdLYPkTbruQSk38DeutU8/edit#gid=268241601) provided by the Neale lab. The PAN-UK Biobank data will be downloaded and processed.
+> Database to extract phenotypes from when a list of phenotypes are provided. The ieu option would extract data for the IEU GWAS database made available through the R package [ieugwasr](https://mrcieu.github.io/ieugwasr/). The neale option would use the [PAN-UK Biobank](https://pan.ukbb.broadinstitute.org) data hosted on Biowulf. The PAN-UK Biobank data will be processed prior to analysis.
 >
 > ***Example:*** `--database neale`
+
+---
+`--outcome_pval_threshold THRESHOLD`
+> **P-Value threshold to filter PAN-UK Biobank SNPs**   
+> *type: float*
+>   
+> Float value that will be used as a p-value threshold to filter the PAN-UK Biobank SNPs. If no threshold is provided then no filter would be used. 
+>
+> ***Example:*** `--outcome_pval_threshold 0.01`
 
 ---
 `--clump`
@@ -127,7 +136,7 @@ Each of the following arguments are optional, and do not need to be provided.
 > The slurm execution method will submit jobs to the [SLURM workload manager](https://slurm.schedmd.com/). It is recommended running mr-seek in this mode as execution will be significantly faster in a distributed environment. This is the default mode of execution.
 >
 > ***local***  
-> Local executions will run serially on compute instance. This is useful for testing, debugging, or when a users does not have access to a high performance computing environment. If this option is not provided, it will default to a local execution mode.
+> Local executions will run serially on compute instance. This is useful for testing, debugging, or when a user does not have access to a high performance computing environment. If this option is not provided, it will default to a local execution mode.
 >
 > ***Example:*** `--mode slurm`
 
@@ -173,7 +182,7 @@ Each of the following arguments are optional, and do not need to be provided.
 
 ---  
   `--tmp-dir TMP_DIR`   
-> **Max number of threads for each process.**  
+> **Path to temporary directory.**  
 > *type: path*  
 > *default: `/lscratch/$SLURM_JOBID`*
 >
@@ -201,8 +210,10 @@ module purge
 module load singularity snakemake
 
 # Step 2A.) Dry-run the pipeline
-./mr-seek run --input .tests/*.R?.fastq.gz \
+./mr-seek run --exposure .tests/pqtl.csv \
+                  --outcome .tests/ieu_10.csv \
                   --output /data/$USER/output \
+                  --database ieu \
                   --mode slurm \
                   --dry-run
 
@@ -210,7 +221,9 @@ module load singularity snakemake
 # The slurm mode will submit jobs to
 # the cluster. It is recommended running
 # the pipeline in this mode.
-./mr-seek run --input .tests/*.R?.fastq.gz \
+./mr-seek run --exposure .tests/pqtl.csv \
+                  --outcome .tests/ieu_10.csv \
                   --output /data/$USER/output \
+                  --database ieu \
                   --mode slurm
 ```
