@@ -21,7 +21,7 @@ def main(raw_args=None):
         action = "store", type=threshold_import, default=None,
         help="P-Value threshold to filter the SNPs by"),
     parser.add_argument("-p", "--population", metavar="EUR",
-        action = "store", type=str, choices=["AFR", "AMR", "CSA", "EAS", "EUR", "MID"],
+        action = "store", type=str, choices=["AFR", "AMR", "EAS", "EUR"],
         default="EUR")
     parser.add_argument("--filter",
         action = "store_true", required = False,

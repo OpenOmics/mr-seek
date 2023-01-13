@@ -284,22 +284,28 @@ def parsed_arguments(name, description):
                                 to process, this flag should be used to define the type
                                 of QTL file it is. Valid options are eqtl, mqtl, or pqtl.
                                   Example: --input_qtl pqtl
-          --pop {{AFR, AMR, CSA, EAS, EUR, MID}}
+          --pop {{AFR, AMR, EAS, EUR}}
                                 Super-population to use when extracting data from Neale
-                                database (Pan-UK BioBank) or when clumping data. Valid
-                                options for this are: AFR, AMR, CSA, EAS, EUR, MID.
+                                database (Pan-UK BioBank) or when clumping data. Currently
+                                only populations shared with the 1000 Genomes project is
+                                supported. Valid options for this are: AFR, AMR, EAS, EUR.
                                 Default: EUR
                                   Example: --pop EUR
           --database {{ieu, neale}}
                                 Database to extract phenotypes from when a list of
                                 phenotypes are provided. The ieu option would extract
                                 data for the IEU GWAS database made available through
-                                ieugwasr. The neale option would extract data from the
-                                PAN-UK Biobank through links provided by the Neale lab.
+                                ieugwasr. The neale option would use the downloaded PAN-UK
+                                Biobank data hosted on Biowulf. through links provided by the Neale lab.
                                 The PAN-UK Biobank data needs to be downloaded and processed.
                                   Example: --database neale
-          --clump 
-                                Perform clumping on the data. Clumping will be run with 
+          --outcome_pval_threshold THRESHOLD
+                                Optional float value that will be used as a p-value threshold
+                                to filter the PAN-UK Biobank SNPs. If no threshold is provided
+                                then no filter would be used
+                                  Example: --outcome_pval_threshold
+          --clump
+                                Perform clumping on the data. Clumping will be run with
                                 the super-population available in the 1000 genomes reference panel.
                                   Example: --clump
 
@@ -469,7 +475,7 @@ def parsed_arguments(name, description):
     # Population
     subparser_run.add_argument(
         '--pop',
-        choices=['AFR', 'AMR', 'CSA', 'EAS', 'EUR', 'MID'],
+        choices=['AFR', 'AMR', 'EAS', 'EUR'],
         type = str.upper,
         required = False,
         default = 'EUR',
