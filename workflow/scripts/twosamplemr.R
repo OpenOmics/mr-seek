@@ -266,3 +266,7 @@ for (i in names(p4)) {
   print(p4[[i]])
   dev.off()
 }
+
+sink('twosamplemr_session.log')
+sessionInfo()
+sink()
