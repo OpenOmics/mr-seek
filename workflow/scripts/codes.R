@@ -3,7 +3,7 @@ library(TwoSampleMR)
 library(optparse)
 
 option_list = list(
-  make_option(c('-r', '--res'), action = 'store', default = NA, type = 'character', help = 'Result CSV file from TwoSampleMR'),
+  make_option(c('-r', '--res'), action = 'store', default = NA, type = 'character', help = 'Result TSV file from TwoSampleMR'),
   make_option(c('-s', '--single'), action = 'store', default = NA, type = 'character', help = 'Single SNP results from TwoSampleMR'),
   make_option(c('-d', '--data'), action = 'store', default = NA, type = 'character', help = 'Harmonized data. Needed to get the exposure and outcome names.'),
   make_option(c('-o','--out'), action = 'store', default = 'all_plots.rds', type = 'character', help = 'Output file name with .rds extension')
@@ -60,9 +60,9 @@ my_all_funnel_plots<-function(res_single){
 # Make rds of all plots
 ###########################
 
-res<-read_csv(opt$res)
-dat<-read_csv(opt$data)
-res_single<-read_csv(opt$single)
+res<-read_tsv(opt$res)
+dat<-read_tsv(opt$data)
+res_single<-read_tsv(opt$single)
 
 all_plots<-list()
 ### Scatter plot

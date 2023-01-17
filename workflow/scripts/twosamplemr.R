@@ -183,8 +183,8 @@ res <- mr(dat, #Harmonised exposure and outcome data. Output from harmonise_data
 # [18] "Unweighted regression"
 #
 
-write.table(dat, 'harmonised_dat.csv', sep=',', row.names=FALSE)
-write.table(res, 'res.csv', sep=',', row.names=FALSE)
+write.table(dat, 'harmonised_dat.tsv', sep='\t', row.names=FALSE)
+write.table(res, 'res.tsv', sep='\t', row.names=FALSE)
 
 
 getdata <- function(x) {
@@ -208,7 +208,7 @@ proc.time() - ptm
 #user  system elapsed
 #17.020   0.025  17.100
 
-write.table(het, 'mr_heterogeneity.csv', sep=',', row.names=FALSE)
+write.table(het, 'mr_heterogeneity.tsv', sep='\t', row.names=FALSE)
 
 ptm <- proc.time()
 comparisons <- names(which(table(paste(dat$id.exposure, dat$id.outcome)) >= 3))
@@ -216,7 +216,7 @@ filtered <- do.call(rbind, lapply(comparisons, getdata))
 filtered <- filtered[as.character(sort(as.integer(rownames(filtered)))),]
 pleio_filtered <- mr_pleiotropy_test(filtered)
 proc.time() - ptm
-write.table(pleio_filtered[!is.na(pleio_filtered$se),], 'mr_pleiotropy.csv', sep=',', row.names=FALSE)
+write.table(pleio_filtered[!is.na(pleio_filtered$se),], 'mr_pleiotropy.tsv', sep='\t', row.names=FALSE)
 
 #ptm <- proc.time()
 #pleio <- mr_pleiotropy_test(dat)
@@ -234,7 +234,7 @@ for (i in names(p1)) {
 
 ### Forest plot compare the MR estimates using the different MR methods against the single SNP tests.
 res_single <- mr_singlesnp(dat)
-write.table(res_single, 'res_single.csv', sep=',', row.names=FALSE)
+write.table(res_single, 'res_single.tsv', sep='\t', row.names=FALSE)
 
 p2 <- mr_forest_plot(res_single)
 dir.create(file.path('singlesnp_forest'), showWarnings = FALSE)
@@ -249,7 +249,7 @@ for (i in names(p2)) {
 
 ## Leave one out analysis
 res_loo <- mr_leaveoneout(dat)
-write.table(res_loo, 'res_loo.csv', sep=',', row.names=FALSE)
+write.table(res_loo, 'res_loo.tsv', sep='\t', row.names=FALSE)
 dir.create(file.path('leaveoneout'), showWarnings = FALSE)
 p3 <- mr_leaveoneout_plot(res_loo)
 for (i in names(p3)) {
@@ -267,3 +267,7 @@ for (i in names(p4)) {
   print(p4[[i]])
   dev.off()
 }
+
+sink('twosamplemr_session.log')
+sessionInfo()
+sink()

@@ -74,9 +74,9 @@ rule twosamplemr:
         exposure = exposure,
         outcome = mr_outcome_input
     output:
-        single = join(workpath, "mr", "res_single.csv"),
-        res = join(workpath, "mr", "res.csv"),
-        data = join(workpath, "mr", "harmonised_dat.csv")
+        single = join(workpath, "mr", "res_single.tsv"),
+        res = join(workpath, "mr", "res.tsv"),
+        data = join(workpath, "mr", "harmonised_dat.tsv")
     log:
         join(workpath, "mr", "twosamplemr.log")
     params:
