@@ -40,7 +40,7 @@ else:
 # Final ouput files of the pipeline
 rule all:
     input:
-        join(workpath, "mr", "res_single.csv")
+        join(workpath, "mr", "all_plots.rds")
 
 
 # Import rules
