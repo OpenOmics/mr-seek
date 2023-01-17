@@ -33,17 +33,18 @@ process_exposure <- function(x) {
     addition <- as.data.frame(stringr::str_split(exp[,1], ':', simplify = T))[,1:4]
     colnames(addition) <- c("Chromosome", "hg37_genpos", "A0", "A1")
     exp <- cbind(exp, addition)
+    discovery <- grep('discovery', colnames(exp), ignore.case=TRUE, value=TRUE)
 
     exposure_dat <- format_data(exp, type="exposure",
                                 snp_col = "rsID",
-                                beta_col = "BETA_discovery",
-                                se_col = "SE_discovery",
-                                eaf_col = "A1FREQ_discovery",
+                                beta_col = grep('BETA', discovery, ignore.case=TRUE, value=TRUE),
+                                se_col = grep('SE', discovery, ignore.case=TRUE, value=TRUE),
+                                eaf_col = grep('A1FREQ', discovery, ignore.case=TRUE, value=TRUE),
                                 effect_allele_col = "A1",
                                 other_allele_col = "A0",
                                 chr_col = 'Chromosome',
                                 pos_col = 'hg37_genpos',
-                                pval_col = 'log10p_discovery',
+                                pval_col = grep('log10', discovery, ignore.case=TRUE, value=TRUE),
                                 log_pval = TRUE)
     exposure_dat$id.exposure <- tools::file_path_sans_ext(basename(x))
   }else if (dim(exp)[[2]] == 1) {
@@ -266,7 +267,3 @@ for (i in names(p4)) {
   print(p4[[i]])
   dev.off()
 }
-
-sink('twosamplemr_session.log')
-sessionInfo()
-sink()
