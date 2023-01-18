@@ -97,7 +97,7 @@ Each of the following arguments are optional, and do not need to be provided.
 
 ---
 `--clump`
-> **Perform clumping on harmonised data**   
+> **Perform clumping on exposure data**   
 > *type: boolean flag*
 >   
 > Perform clumping on the data. Clumping will be run with the super-population available in the 1000 genomes reference panel.
@@ -214,6 +214,7 @@ module load singularity snakemake
 ./mr-seek run --exposure .tests/pqtl.csv \
                   --outcome .tests/ieu_10.csv \
                   --output /data/$USER/output \
+                  --input_qtl pqtl \
                   --database ieu \
                   --mode slurm \
                   --dry-run
@@ -225,6 +226,7 @@ module load singularity snakemake
 ./mr-seek run --exposure .tests/pqtl.csv \
                   --outcome .tests/ieu_10.csv \
                   --output /data/$USER/output \
+                  --input_qtl pqtl \
                   --database ieu \
                   --mode slurm
 ```
