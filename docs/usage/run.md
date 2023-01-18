@@ -10,10 +10,11 @@ Setting up the mr-seek pipeline is fast and easy! In its most basic form, <code>
 ## 2. Synopsis
 ```text
 $ mr-seek run [--help] \
-      [--mode {slurm,local}] [--job-name JOB_NAME] [--batch-id BATCH_ID] \
-      [--tmp-dir TMP_DIR] [--silent] [--sif-cache SIF_CACHE] \
-      [--singularity-cache SINGULARITY_CACHE] \
-      [--dry-run] [--threads THREADS] \
+      [--dry-run] [--job-name JOB_NAME] [--mode {slurm,local}] \
+      [--sif-cache SIF_CACHE] [--singularity-cache SINGULARITY_CACHE] \
+      [--silent] [--threads THREADS] [--tmp-dir TMP_DIR] \
+      [--input_qtl INPUT_QTL] [--pop POP] [--database DATABASE] \
+      [--outcome_pval_threshold PVAL_THRESHOLD] [--clump] \
       --exposure EXPOSURE \
       --outcome OUTCOME \
       --output OUTPUT
