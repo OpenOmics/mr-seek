@@ -263,12 +263,13 @@ def parsed_arguments(name, description):
                                 a list of exposures available in a database or exposure
                                 file(s) to read and process. If the input is not being
                                 extracted from a database then the additional flag
-                                should be used to define the type of exposure it is.
+                                should be used to define the type of exposure it is. If 
+                                multiple files are provided from the command-line, each 
+                                input file should seperated by a space. Globbing is supported!
                                   Example: --exposure eQTL.csv
           --outcome OUTCOME [OUTCOME ...]
-                                Outcome file to process. The file should be either a
-                                a list of outcomes available in a database or outcome
-                                file(s) to read and process. If the input is being
+                                Outcome file to process. The file should be a list of
+                                outcomes available in a database. If the input is being
                                 extracted from a database then the additional flag
                                 should be used to define the database it is.
                                   Example: --outcome outcome.csv
