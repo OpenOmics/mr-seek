@@ -34,16 +34,16 @@ Each of the following arguments are required. Failure to provide a required argu
 > **Input exposure QTL or phenotype list.**  
 > *type: file*  
 >
-> The file should be either a list of exposures available in a database or exposure file to read and process. If a QTL file is provided then an additional flag should be used to define the format it is. Currently support is only available for one file at a time.
+> The file should be either a list of exposures available in a database or exposure file to read and process. If a QTL file is provided then an additional flag should be used to define the format it is. If multiple files are provided from the command-line, each input file should seperated by a space. Globbing is supported!
 >
 > ***Example:*** `--exposure eQTL.csv`
 
 ---  
 `--outcome OUTCOME [OUTCOME ...]`  
-> **Input outcome QTL or phenotype list.**  
+> **Input phenotype list.**  
 > *type: file*  
 >
-> The file should be either a list of outcomes available in a database or exposure file to read and process. Currently support is only available for one file at a time. An additional flag should be used to specify which database to extract the entries from.
+> The file should be a list of outcomes available in a database. Currently support is only available for one file at a time. An additional flag should be used to specify which database to extract the entries from.
 >
 > ***Example:*** `--outcome outcome.csv`
 
