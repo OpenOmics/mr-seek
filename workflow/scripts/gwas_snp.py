@@ -18,7 +18,7 @@ def main(raw_args=None):
         action = "store", type=str, required=True,
         help="Input GWAS files")
     parser.add_argument("-t", "--threshold", metavar="0.01",
-        action = "store", type=threshold_import, default=None,
+        action = "store", type=threshold_import, default='None',
         help="P-Value threshold to filter the SNPs by"),
     parser.add_argument("-p", "--population", metavar="EUR",
         action = "store", type=str, choices=["AFR", "AMR", "EAS", "EUR"],
@@ -56,11 +56,15 @@ def main(raw_args=None):
                 if vals['ref'] == '-':
                     length = length - 1
                 if len(vals['alt']) > len(vals['ref']):
-                    length = -1
                     if vals['ref'] == vals['alt'][:len(vals['ref'])]:
+                        length = -1
                         vals['pos'] = str(int(vals['pos'])+len(vals['ref']))
                         vals['alt'] = vals['alt'][len(vals['ref']):]
                         vals['ref'] = '-'
+                    else:
+                        length = len(vals['ref']) - 1
+                elif len(vals['alt']) > 1 and len(vals['ref']) > 1:
+                    length = len(vals['ref']) - 1
                 g.write(f"{vals['chr']}\t{vals['pos']}\t{str(int(vals['pos'])+length)}\t{vals['ref']}/{vals['alt']}\t+\n")
 
 if __name__ == '__main__':
