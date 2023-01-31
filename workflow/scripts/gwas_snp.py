@@ -38,10 +38,15 @@ def main(raw_args=None):
             h = gzip.open(os.path.join(os.path.dirname(args.output), f"filter.{os.path.splitext(os.path.basename(args.output))[0]}.tsv.gz"), 'wt')
             h.write(header)
         header = header.strip().split('\t')
-        indexes = {i: header.index(col_headers[i]) for i in col_headers}
+        indexes = {i: header.index(col_headers[i]) if col_headers[i] in header else -1 for i in col_headers}
         current = ""
         gheader = 'chr\tstart\tend\tallele\tstrand'
         with open(args.output, 'w') as g:
+            if args.threshold != "None":
+                if indexes['pval'] == -1:
+                   with open(args.output + ".error", 'w') as err:
+                     err.write("Missing population")
+                   return() 
             for line in f:
                 values = line.strip().split('\t')
                 vals = {i: values[indexes[i]] for i in indexes}
