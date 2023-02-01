@@ -4,7 +4,7 @@
     },
     "database": {
        "neale": "/data/GWASDB/references/mr-seek/neale/"
-    }
+    },
     "database_manifest": {
        "neale": "/data/GWASDB/references/mr-seek/Pan-UK_Biobank_phenotype_manifest_20230120.tsv",
        "ieu": "/data/GWASDB/references/mr-seek/ieugwasr_ao_20230123.tsv"
