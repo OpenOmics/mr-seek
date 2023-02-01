@@ -37,6 +37,11 @@ if 'outcome_pval_threshold' in config['options']:
 else:
     threshold = None
 
+if 'keyword' in config['options']:
+    keyword = bool(config['options']['keyword'])
+else:
+    keyword = False
+
 # Final ouput files of the pipeline
 rule all:
     input:

@@ -245,7 +245,7 @@ def parsed_arguments(name, description):
                 [--sif-cache SIF_CACHE] [--singularity-cache SINGULARITY_CACHE] \\
                 [--silent] [--threads THREADS] [--tmp-dir TMP_DIR] \\
                 [--input_qtl INPUT_QTL] [--pop POP] [--database DATABASE] \\
-                [--outcome_pval_threshold PVAL_THRESHOLD] [--clump] \\
+                [--outcome_pval_threshold PVAL_THRESHOLD] [--clump] [--keyword] \\
                 --exposure EXPOSURE \\
                 --outcome OUTCOME \\
                 --output OUTPUT
@@ -263,15 +263,16 @@ def parsed_arguments(name, description):
                                 a list of exposures available in a database or exposure
                                 file(s) to read and process. If the input is not being
                                 extracted from a database then the additional flag
-                                should be used to define the type of exposure it is. If 
-                                multiple files are provided from the command-line, each 
+                                should be used to define the type of exposure it is. If
+                                multiple files are provided from the command-line, each
                                 input file should seperated by a space. Globbing is supported!
                                   Example: --exposure eQTL.csv
           --outcome OUTCOME [OUTCOME ...]
-                                Outcome file to process. The file should be a list of
-                                outcomes available in a database. If the input is being
-                                extracted from a database then the additional flag
-                                should be used to define the database it is.
+                                Outcome file to process. The file should be a list of outcomes
+                                available in a database or a list of keywords to search for,
+                                with one entry per line. If the input is being extracted from a
+                                database then the additional flag should be used to define the
+                                database it is.
                                   Example: --outcome outcome.csv
           --output OUTPUT
                                 Path to an output directory. This location is where
@@ -311,6 +312,12 @@ def parsed_arguments(name, description):
                                 Perform clumping on the data. Clumping will be run with
                                 the super-population available in the 1000 genomes reference panel.
                                   Example: --clump
+
+          --keyword
+                                Extract outcome phenotypes based off of keyword query. This
+                                will search the phenotype manifest of the corresponding database
+                                for the phenotype with the query words in it.
+                                  Example: --keyword
 
         {3}{4}Orchestration options:{5}
           --mode {{slurm,local}}
@@ -508,6 +515,13 @@ def parsed_arguments(name, description):
         type = float,
         required = False,
         default = None,
+        help = argparse.SUPPRESS
+    )
+
+    # Keyword query
+    subparser_run.add_argument(
+        '--keyword',
+        action="store_true",
         help = argparse.SUPPRESS
     )
 

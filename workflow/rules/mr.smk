@@ -1,3 +1,10 @@
+def neale_preprocess_input(wildcards):
+    if database == 'neale':
+        if keyword:
+            return(join(workpath, "query", "phenotype_id.csv"))
+        else:
+            return(outcome)
+
 def mr_flags(wildcards):
     flags = []
     if input_format != None:
@@ -8,23 +15,26 @@ def mr_flags(wildcards):
         flags.append(f"--clump")
     return(' '.join(flags))
 
-def mr_outcome_input(wildcards):
-    if database == 'neale':
-        with open(outcome) as f:
-            gwases = f.read().strip().split('\n')
-            samples = [i.replace('.tsv.bgz', '') for i in gwases]
-            return(expand(os.path.join(workpath, "gwas", "{sample}.rsid.tsv.gz"), sample=samples))
-    else:
-        return(outcome)
+def twosamplemr_outcome_input(wildcards):
+    if database == 'ieu':
+        if keyword:
+            return([join(workpath, "query", "phenotype_id.csv")])
+    elif database == 'neale':
+        if keyword:
+            checkpoint_output = checkpoints.phenotype_query.get(**wildcards).output['phenotype_list']
+            with open(checkpoint_output) as f:
+                gwases = f.read().strip().split('\n')
+                samples = [i.replace('.tsv.bgz', '') for i in gwases]
+                return(expand(os.path.join(workpath, "gwas", "{sample}.rsid.tsv.gz"), sample=samples))
+        else:
+            with open(outcome) as f:
+                gwases = f.read().strip().split('\n')
+                samples = [i.replace('.tsv.bgz', '') for i in gwases]
+                return(expand(os.path.join(workpath, "gwas", "{sample}.rsid.tsv.gz"), sample=samples))
+    return(outcome)
 
-def mr_outcome_flag(wildcards):
-    if database == 'neale':
-        with open(outcome) as f:
-            gwases = f.read().strip().split('\n')
-            samples = [i.replace('.tsv.bgz', '') for i in gwases]
-            return(','.join(expand(os.path.join(workpath, "gwas", "{sample}.rsid.tsv.gz"), sample=samples)))
-    else:
-        return(outcome)
+def twosamplemr_outcome_flag(wildcards):
+    return(','.join(twosamplemr_outcome_input(wildcards)))
 
 # rule neale_download:
 #     output: gwas = os.path.join(workpath, "gwas/{sample}.rsid.tsv.gz")
@@ -48,6 +58,7 @@ def mr_outcome_flag(wildcards):
 #       """
 
 rule neale_preprocess:
+    input: phenotype_list = neale_preprocess_input
     output: gwas = temp(os.path.join(workpath, "gwas/{sample}.rsid.tsv.gz"))
     params:
         rname = "neale_preprocess",
@@ -68,11 +79,10 @@ rule neale_preprocess:
       mv "filter.{params.sample}.convert.tsv.gz" "{output.gwas}" || touch "{output.gwas}" "{workpath}/{params.sample}.error"
       """
 
-
 rule twosamplemr:
     input:
         exposure = exposure,
-        outcome = mr_outcome_input
+        outcome = twosamplemr_outcome_input
     output:
         single = join(workpath, "mr", "res_single.tsv"),
         res = join(workpath, "mr", "res.tsv"),
@@ -83,7 +93,7 @@ rule twosamplemr:
         rname = "twosamplemr",
         outdir = join(workpath, "mr"),
         exposure = ','.join(exposure),
-        outcome = mr_outcome_flag,
+        outcome = twosamplemr_outcome_flag,
         pop_flag = population,
         add_flag = mr_flags,
         script = join(workpath, "workflow", "scripts", "twosamplemr.R")
@@ -119,4 +129,27 @@ rule rds_plot:
             --single {input.single} \\
             --out {output.rds} \\
             > {log} 2>&1
+        """
+
+checkpoint phenotype_query:
+    input:
+        query = outcome
+    output:
+        phenotype_list = join(workpath, "query", "phenotype_id.csv"),
+        phenotype_metadata = join(workpath, "query", "phenotype_metadata.csv")
+    params:
+        rname = "phenotype_query",
+        script = join(workpath, "workflow", "scripts", f"{database}_phenotype_query.R"),
+        pop_flag = population,
+        error_log = "phenotype_query.error",
+        manifest = config['database_manifest'][database]
+    container: config["images"]["mr-base"]
+    shell:
+        """
+        Rscript {params.script} --query {input.query} \\
+            --pop {params.pop_flag} \\
+            --manifest {params.manifest} \\
+            --output {output.phenotype_list} \\
+            --error {params.error_log} \\
+            --metadata {output.phenotype_metadata}
         """
