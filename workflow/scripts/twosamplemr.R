@@ -120,7 +120,7 @@ if (opt$database == 'neale'){
     outcome_dat <- rbind(outcome_dat, out_data[out_data$SNP %in% exposure_dat$SNP,])
   })}
 } else if (opt$database == 'ieu') {
-  out <- read.table(opt$out, header=TRUE)
+  out <- read.table(opt$out)
   if (dim(out)[[2]] == 1) {
     # Get effects of instruments on outcome
     outcome_dat = extract_outcome_data(
