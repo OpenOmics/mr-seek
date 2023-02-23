@@ -38,7 +38,7 @@ else:
     threshold = None
 
 if 'keyword' in config['options']:
-    keyword = bool(config['options']['keyword'])
+    keyword = config['options']['keyword'] == 'True'
 else:
     keyword = False
 
