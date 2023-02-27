@@ -47,6 +47,24 @@ process_exposure <- function(x) {
                                 pval_col = grep('log10', discovery, ignore.case=TRUE, value=TRUE),
                                 log_pval = TRUE)
     exposure_dat$id.exposure <- tools::file_path_sans_ext(basename(x))
+  }else if (opt$exp_flag == "levy") {
+    addition <- as.data.frame(stringr::str_split(exp[,'SNP'], ':', simplify=T))[,1:5]
+    colnames(addition) <- c("Chromosome", "hg38_genpos", "A0", "A1", "RSID")
+    exp <- cbind(exp, addition)
+    exp$SE <- exp[,grep('Fx', colnames(exp), ignore.case=TRUE, value=TRUE)] / exp$T
+    exp$log10P <- -exp$log10P
+    exposure_dat <- format_data(exp, type="exposure",
+                                snp_col = grep("RSID", colnames(exp), ignore.case=TRUE, value=TRUE),
+                                beta_col = grep('Fx', colnames(exp), ignore.case=TRUE, value=TRUE),
+                                se_col = grep('SE', colnames(exp), ignore.case=TRUE, value=TRUE),
+                                eaf_col = grep('EAF', colnames(exp), ignore.case=TRUE, value=TRUE),
+                                effect_allele_col = "A1",
+                                other_allele_col = "A0",
+                                chr_col = 'Chromosome',
+                                pos_col = 'hg38_genpos',
+                                pval_col = grep('log10', colnames(exp), ignore.case=TRUE, value=TRUE),
+                                log_pval = TRUE)
+    exposure_dat$id.exposure <- tools::file_path_sans_ext(basename(x))
   }else if (dim(exp)[[2]] == 1) {
     # Get instruments or SNPs: This function searches for GWAS significant SNPs (for a given p-value) for a specified set of outcomes. It then performs LD based clumping to return only independent significant associations.
     exposure_dat = extract_instruments(
@@ -90,10 +108,10 @@ exp_snp_list$custom <- tolower(paste(exposure_dat$chr.exposure, exposure_dat$pos
 exp_snp_list <- as.data.frame(exp_snp_list)
 exp_snp_list <- exp_snp_list %>%  distinct(.keep_all = TRUE)
 
-if (opt$database == 'neale'){
-  rownames(exp_snp_list) <- exp_snp_list$rsid
-  exposure_dat$SNP <- exp_snp_list[exposure_dat$SNP,'custom']
-}
+#if (opt$database == 'neale'){
+#  rownames(exp_snp_list) <- exp_snp_list$rsid
+#  exposure_dat$SNP <- exp_snp_list[exposure_dat$SNP,'custom']
+#}
 
 if (opt$database == 'neale'){
   outcome_dat <- c()
@@ -110,7 +128,19 @@ if (opt$database == 'neale'){
         af <- grep('cases', af, value=TRUE)
     }
     data$custom_id <- paste(data$chr, data$pos, data$ref, data$alt, sep='_')
-    out_data <- format_data(data, type="outcome", snp_col="custom_id", #snp_col="rsid",
+
+    #Split output rsids
+    out_rsid <- stringr::str_split(data$rsid, ',', simplify=TRUE)
+    #Find all matching rsids
+    temp <- sapply(1:dim(out_rsid)[2], function(x) match(exposure_dat$SNP, out_rsid[,x]))
+    #Get location of all matching rsids and the input row they belong to
+    match_id <- sapply(which(rowSums(!is.na(temp)) > 0), function(x) temp[x,!is.na(temp[x,])][[1]])
+    names(match_id) <- which(rowSums(!is.na(temp)) > 0)
+    no_match <- which(rowSums(!is.na(temp)) == 0)
+    data_subset <- data[match_id,]
+    data_subset$rsid_new <- exposure_dat$SNP[as.integer(names(match_id))]
+
+    out_data <- format_data(data_subset, type="outcome", snp_col="rsid_new",
         beta_col=paste0("beta_", opt$pop), se_col=paste0("se_", opt$pop),
         eaf_col=paste0(af), effect_allele_col="alt",
         other_allele_col="ref", pval_col = paste0("pval_", opt$pop))
@@ -151,10 +181,10 @@ dat <- harmonise_data(
             # But multiple values can be supplied as a vector, each element relating to a different outcome.
 
 
-if (opt$database == 'neale'){
-  rownames(exp_snp_list) <- exp_snp_list$custom
-  dat$SNP <- exp_snp_list[dat$SNP, 'rsid']
-}
+#if (opt$database == 'neale'){
+#  rownames(exp_snp_list) <- exp_snp_list$custom
+#  dat$SNP <- exp_snp_list[dat$SNP, 'rsid']
+#}
 
 # Perform MR
 res <- mr(dat, #Harmonised exposure and outcome data. Output from harmonise_data.
