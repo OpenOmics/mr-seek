@@ -16,7 +16,9 @@ LABEL maintainer=kuhnsa@nih.gov
 #    - remotes_2.4.2      (CRAN)
 #    - R.utils            (CRAN)
 #    - TwoSampleMR_0.5.6  (Github: MRCIEU/TwoSampleMR)
-#        @requires: git
+#        @requires: git, devtools
+#    - MRPlotly  (Github: OpenOmics/MRPlotly)
+#        @requires: git, devtools
 
 ############### INIT ################
 # Create Container filesystem specific 
@@ -99,6 +101,8 @@ RUN Rscript -e 'install.packages(c("data.table", "dplyr", "optparse", "remotes",
 RUN Rscript -e 'devtools::install_github("MRCIEU/TwoSampleMR")'
 # Other R missing packages
 RUN Rscript -e 'install.packages(c("R.utils", "tidyverse", "ggpubr", "ggsignif", "rstatix"))'
+# Install MRPlotly
+RUN Rscript -e 'devtools::install_github("OpenOmics/MRPlotly@v0.1.0")'
 
 ################ POST #################
 # Add Dockerfile and export env variables
