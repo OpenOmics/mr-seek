@@ -1,9 +1,17 @@
-def neale_preprocess_input(wildcards):
+def phenotype_filter_input(wildcards):
     if database == 'neale':
         if keyword:
             return(join(workpath, "query", "phenotype_id.csv"))
         else:
             return(outcome)
+
+def neale_preprocess_input(wildcards):
+    if database == 'neale':
+        return(join(workpath, "query", "phenotype_id_filter.csv"))
+        # if keyword:
+        #     return(join(workpath, "query", "phenotype_id.csv"))
+        # else:
+        #     return(outcome)
 
 def mr_flags(wildcards):
     flags = []
@@ -20,17 +28,18 @@ def twosamplemr_outcome_input(wildcards):
         if keyword:
             return([join(workpath, "query", "phenotype_id.csv")])
     elif database == 'neale':
-        if keyword:
-            checkpoint_output = checkpoints.phenotype_query.get(**wildcards).output['phenotype_list']
-            with open(checkpoint_output) as f:
-                gwases = f.read().strip().split('\n')
-                samples = [i.replace('.tsv.bgz', '') for i in gwases]
-                return(expand(os.path.join(workpath, "gwas", "{sample}.rsid.tsv.gz"), sample=samples))
-        else:
-            with open(outcome) as f:
-                gwases = f.read().strip().split('\n')
-                samples = [i.replace('.tsv.bgz', '') for i in gwases]
-                return(expand(os.path.join(workpath, "gwas", "{sample}.rsid.tsv.gz"), sample=samples))
+        return(join(workpath, "query", "phenotype_id_filter.csv"))
+        # if keyword:
+        #     checkpoint_output = checkpoints.phenotype_filter.get(**wildcards).output['phenotype_list']
+        #     with open(checkpoint_output) as f:
+        #         gwases = f.read().strip().split('\n')
+        #         samples = [i.replace('.tsv.bgz', '') for i in gwases]
+        #         return(expand(os.path.join(workpath, "gwas", "{sample}.rsid.tsv.gz"), sample=samples))
+        # else:
+        #     with open(outcome) as f:
+        #         gwases = f.read().strip().split('\n')
+        #         samples = [i.replace('.tsv.bgz', '') for i in gwases]
+        #         return(expand(os.path.join(workpath, "gwas", "{sample}.rsid.tsv.gz"), sample=samples))
     return(outcome)
 
 def twosamplemr_outcome_flag(wildcards):
@@ -58,7 +67,8 @@ def twosamplemr_outcome_flag(wildcards):
 #       """
 
 rule neale_preprocess:
-    input: phenotype_list = neale_preprocess_input
+    #input: phenotype_list = neale_preprocess_input
+    input: phenotype_list = join(workpath, "query", "phenotype_id_filter.csv")
     output: gwas = temp(os.path.join(workpath, "gwas/{sample}.rsid.tsv.gz"))
     params:
         rname = "neale_preprocess",
@@ -93,9 +103,10 @@ rule twosamplemr:
         rname = "twosamplemr",
         outdir = join(workpath, "mr"),
         exposure = ','.join(exposure),
-        outcome = twosamplemr_outcome_flag,
+        outcome = twosamplemr_outcome_input,
         pop_flag = population,
         add_flag = mr_flags,
+        path = config["database"]["neale"],
         script = join(workpath, "workflow", "scripts", "twosamplemr.R")
     container: config["images"]["mr-base"]
     shell:
@@ -105,6 +116,7 @@ rule twosamplemr:
             --exp "{params.exposure}" \\
             --out "{params.outcome}" \\
             --pop {params.pop_flag} \\
+            --path {params.path} \\
             {params.add_flag} \\
          > {log} 2>&1
         """
@@ -131,17 +143,36 @@ rule rds_plot:
             > {log} 2>&1
         """
 
-checkpoint phenotype_query:
+rule phenotype_query:
     input:
         query = outcome
     output:
         phenotype_list = join(workpath, "query", "phenotype_id.csv"),
-        phenotype_metadata = join(workpath, "query", "phenotype_metadata.csv")
+        phenotype_metadata = join(workpath, "query", "phenotype_metadata.tsv")
     params:
         rname = "phenotype_query",
         script = join(workpath, "workflow", "scripts", f"{database}_phenotype_query.R"),
+        manifest = config['database_manifest'][database]
+    container: config["images"]["mr-base"]
+    shell:
+        """
+        Rscript {params.script} --query {input.query} \\
+            --manifest {params.manifest} \\
+            --output {output.phenotype_list} \\
+            --metadata {output.phenotype_metadata}
+        """
+
+checkpoint phenotype_filter:
+    input:
+        query = phenotype_filter_input
+    output:
+        phenotype_list = join(workpath, "query", "phenotype_id_filter.csv"),
+        phenotype_metadata = join(workpath, "query", "phenotype_metadata_filter.tsv")
+    params:
+        rname = "phenotype_query",
+        script = join(workpath, "workflow", "scripts", f"{database}_phenotype_filter.R"),
         pop_flag = population,
-        error_log = "phenotype_query.error",
+        error_log = "phenotype_filter.error",
         manifest = config['database_manifest'][database]
     container: config["images"]["mr-base"]
     shell:

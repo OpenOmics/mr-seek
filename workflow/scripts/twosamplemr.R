@@ -20,7 +20,9 @@ option_list <- list(
   make_option(c("-d", "--database"), type='character', action='store', default=NA,
     help="Database to download gwas from"),
   make_option(c("-c", "--clump"), action='store_true', default=FALSE,
-    help="Run clumping on harmonised data")
+    help="Run clumping on harmonised data"),
+  make_option(c("--path"), type='character', action='store', default=NA,
+    help="Path to where database files are saved")
 )
 
 opt <- parse_args(OptionParser(option_list=option_list))
@@ -115,12 +117,16 @@ exp_snp_list <- exp_snp_list %>%  distinct(.keep_all = TRUE)
 
 if (opt$database == 'neale'){
   outcome_dat <- c()
-  files <- strsplit(opt$out, ',')[[1]]
-  files <- unique(files)
+  #files <- strsplit(opt$out, ',')[[1]]
+  #files <- unique(files)
+
+  out <- read.table(opt$out)
+  files <- sapply(out, function(x) gsub('tsv.bgz', 'rsid.tsv.gz', x))
   print(files)
   for (filename in files) {
     try({
-    data <- fread(filename)
+    #data <- fread(filename)
+    data <- fread(file.path(opt$path, filename))
     print(filename)
     data[[paste0('pval_', opt$pop)]] <- exp(data[[paste0('pval_', opt$pop)]])
     af <- grep(opt$pop, grep('af', colnames(data), value=TRUE), value=TRUE)
