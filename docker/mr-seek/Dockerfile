@@ -102,7 +102,7 @@ RUN Rscript -e 'devtools::install_github("MRCIEU/TwoSampleMR")'
 # Other R missing packages
 RUN Rscript -e 'install.packages(c("R.utils", "tidyverse", "ggpubr", "ggsignif", "rstatix"))'
 # Install MRPlotly
-RUN Rscript -e 'devtools::install_github("OpenOmics/MRPlotly@v0.1.0")'
+RUN Rscript -e 'devtools::install_github("OpenOmics/MRPlotly@v0.2.1")'
 
 ################ POST #################
 # Add Dockerfile and export env variables
