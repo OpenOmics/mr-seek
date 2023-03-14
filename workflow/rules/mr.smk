@@ -21,6 +21,8 @@ def mr_flags(wildcards):
         flags.append(f"--database {database}")
     if clump == 'True':
         flags.append(f"--clump")
+    if threshold != None:
+        flags.append(f"--pval {threshold}")
     return(' '.join(flags))
 
 def twosamplemr_outcome_input(wildcards):
@@ -96,7 +98,9 @@ rule twosamplemr:
     output:
         single = join(workpath, "mr", "res_single.tsv"),
         res = join(workpath, "mr", "res.tsv"),
-        data = join(workpath, "mr", "harmonised_dat.tsv")
+        data = join(workpath, "mr", "harmonised_dat.tsv"),
+        loo = join(workpath, "mr", "res_loo.tsv"),
+        sessionInfo = join(workpath, "mr", "twosamplemr_session.log")
     log:
         join(workpath, "mr", "twosamplemr.log")
     params:
@@ -125,21 +129,28 @@ rule rds_plot:
     input:
         single = rules.twosamplemr.output.single,
         res = rules.twosamplemr.output.res,
-        data = rules.twosamplemr.output.data
+        data = rules.twosamplemr.output.data,
+        loo = rules.twosamplemr.output.loo,
+        sessionInfo = rules.twosamplemr.output.sessionInfo
     output:
         rds = join(workpath, "mr", "all_plots.rds")
     log:
         join(workpath, "mr", "rds_plot.log")
     params:
         rname = "rds_plot",
-        script = join(workpath, "workflow", "scripts", "codes.R")
+        error = errorlog,
+        script = join(workpath, "workflow", "scripts", "twosamplemr_report.R")
     container: config["images"]["mr-base"]
     shell:
         """
         Rscript {params.script} --res {input.res} \\
             --data {input.data} \\
             --single {input.single} \\
+            --loo {input.loo} \\
             --out {output.rds} \\
+            --version {input.sessionInfo} \\
+            --failed {params.error} \\
+            --include_data
             > {log} 2>&1
         """
 
@@ -162,7 +173,7 @@ rule phenotype_query:
             --metadata {output.phenotype_metadata}
         """
 
-checkpoint phenotype_filter:
+rule phenotype_filter:
     input:
         query = phenotype_filter_input
     output:
@@ -172,7 +183,7 @@ checkpoint phenotype_filter:
         rname = "phenotype_query",
         script = join(workpath, "workflow", "scripts", f"{database}_phenotype_filter.R"),
         pop_flag = population,
-        error_log = "phenotype_filter.error",
+        error_log = errorlog,
         manifest = config['database_manifest'][database]
     container: config["images"]["mr-base"]
     shell:
@@ -184,3 +195,9 @@ checkpoint phenotype_filter:
             --error {params.error_log} \\
             --metadata {output.phenotype_metadata}
         """
+
+onsuccess:
+    shell("""sleep 10; ./workflow/scripts/jobby $(grep --color=never "^Submitted .* with external jobid" ./logfiles/snakemake.log | awk '{{print $NF}}'  | sed "s/['.]//g" | sort | uniq | tr "\\n" " ")  > pipeline_job_status.tsv""")
+
+onerror:
+    shell("""sleep 10; ./workflow/scripts/jobby $(grep --color=never "^Submitted .* with external jobid" ./logfiles/snakemake.log | awk '{{print $NF}}'  | sed "s/['.]//g" | sort | uniq | tr "\\n" " ")  > pipeline_job_status.tsv""")
