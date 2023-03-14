@@ -33,7 +33,10 @@ else:
     database = None
 
 if 'outcome_pval_threshold' in config['options']:
-    threshold = config['options']['outcome_pval_threshold']
+    if config['options']['outcome_pval_threshold'] == 'None':
+        threshold = None
+    else:
+        threshold = config['options']['outcome_pval_threshold']
 else:
     threshold = None
 
@@ -41,6 +44,12 @@ if 'keyword' in config['options']:
     keyword = config['options']['keyword'] == 'True'
 else:
     keyword = False
+
+errorlog = join(workpath, 'pipeline_error.csv')
+
+if not os.path.isfile(errorlog):
+    with open(errorlog, 'w') as f:
+        f.write('File,Error\n')
 
 # Final ouput files of the pipeline
 rule all:
