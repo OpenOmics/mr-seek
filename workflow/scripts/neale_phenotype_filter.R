@@ -28,7 +28,11 @@ query <- read.table(opt$query)[[1]]
 
 index <- which(manifest[,filename] %in% query)
 
-write.table(manifest[query[rowSums(manifest[query,grep('^n_', grep(opt$pop, headers, value=TRUE), value=TRUE)], na.rm=TRUE) == 0], filename], opt$error, row.names=FALSE, col.names=FALSE, quote=FALSE)
+if (!file.exists(opt$error)) {
+  write.table(c('File', 'Error'), opt$error, row.names=FALSE, col.names=FALSE, quote=FALSE, sep='\t')
+}
+
+write.table(cbind(manifest[query[rowSums(manifest[query,grep('^n_', grep(opt$pop, headers, value=TRUE), value=TRUE)], na.rm=TRUE) == 0], filename], 'Population Missing'), opt$error, col.names=FALSE, quote=FALSE, append=TRUE, sep=',')
 
 write.table(manifest[query[rowSums(manifest[query,grep('^n_', grep(opt$pop, headers, value=TRUE), value=TRUE)], na.rm=TRUE) > 0], filename], opt$output, row.names=FALSE, col.names=FALSE, quote=FALSE)
 
