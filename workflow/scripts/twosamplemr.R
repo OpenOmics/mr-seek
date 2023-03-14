@@ -22,7 +22,9 @@ option_list <- list(
   make_option(c("-c", "--clump"), action='store_true', default=FALSE,
     help="Run clumping on harmonised data"),
   make_option(c("--path"), type='character', action='store', default=NA,
-    help="Path to where database files are saved")
+    help="Path to where database files are saved"),
+  make_option(c("--pval"), type='double', action='store', default=NA,
+    help="P-value threshold used to filter outcome SNPs for Neale database")
 )
 
 opt <- parse_args(OptionParser(option_list=option_list))
@@ -58,7 +60,7 @@ process_exposure <- function(x) {
     exposure_dat <- format_data(exp, type="exposure",
                                 snp_col = grep("RSID", colnames(exp), ignore.case=TRUE, value=TRUE),
                                 beta_col = grep('Fx', colnames(exp), ignore.case=TRUE, value=TRUE),
-                                se_col = grep('SE', colnames(exp), ignore.case=TRUE, value=TRUE),
+                                se_col = grep('^SE', colnames(exp), ignore.case=TRUE, value=TRUE),
                                 eaf_col = grep('EAF', colnames(exp), ignore.case=TRUE, value=TRUE),
                                 effect_allele_col = "A1",
                                 other_allele_col = "A0",
@@ -90,7 +92,12 @@ exp_files <- strsplit(opt$exp, ',')[[1]]
 exp_files <- unique(exp_files)
 exposure_dat <- c()
 for (filename in exp_files) {
-  exposure_dat <- rbind(exposure_dat, process_exposure(filename))
+  print(filename)
+  tryCatch({
+    exposure_dat <- rbind(exposure_dat, process_exposure(filename))
+  }, error=function(cond) {
+    write.table(cbind(basename(filename), 'Problem Loading Exposure File for MR'), opt$error, col.names=FALSE, quote=FALSE, append=TRUE, sep=',')
+  })
 }
 
 if (opt$clump) {
@@ -124,16 +131,21 @@ if (opt$database == 'neale'){
   files <- sapply(out, function(x) gsub('tsv.bgz', 'rsid.tsv.gz', x))
   print(files)
   for (filename in files) {
-    try({
+    tryCatch({
     #data <- fread(filename)
     data <- fread(file.path(opt$path, filename))
     print(filename)
+
+    if (!is.na(opt$pval)) {
+      data <- data[which(data[[paste0('pval_', opt$pop)]]  < log(opt$pval)),]
+    }
+
     data[[paste0('pval_', opt$pop)]] <- exp(data[[paste0('pval_', opt$pop)]])
     af <- grep(opt$pop, grep('af', colnames(data), value=TRUE), value=TRUE)
     if (length(af) == 2) {
         af <- grep('cases', af, value=TRUE)
     }
-    data$custom_id <- paste(data$chr, data$pos, data$ref, data$alt, sep='_')
+    #data$custom_id <- paste(data$chr, data$pos, data$ref, data$alt, sep='_')
 
     #Split output rsids
     out_rsid <- stringr::str_split(data$rsid, ',', simplify=TRUE)
@@ -154,6 +166,8 @@ if (opt$database == 'neale'){
     out_data$outcome <- strsplit(basename(filename), '\\.')[[1]][[1]]
     out_data$id.outcome <- strsplit(basename(filename), '\\.')[[1]][[1]]
     outcome_dat <- rbind(outcome_dat, out_data[out_data$SNP %in% exposure_dat$SNP,])
+  }, error=function(cond) {
+    write.table(cbind(basename(filename), 'Problem Loading Neale Phenotype for MR'), opt$error, col.names=FALSE, quote=FALSE, append=TRUE, sep=',')
   })}
 } else if (opt$database == 'ieu') {
   out <- read.table(opt$out)
