@@ -24,7 +24,9 @@ option_list <- list(
   make_option(c("--path"), type='character', action='store', default=NA,
     help="Path to where database files are saved"),
   make_option(c("--pval"), type='double', action='store', default=NA,
-    help="P-value threshold used to filter outcome SNPs for Neale database")
+    help="P-value threshold used to filter outcome SNPs for Neale database"),
+  make_option(c("--error"), type='character', action='store', default=NA,
+    help="Error file to log any exposure or outcome files that failed")
 )
 
 opt <- parse_args(OptionParser(option_list=option_list))
