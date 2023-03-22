@@ -21,7 +21,11 @@ opt <- parse_args(OptionParser(option_list=option_list))
 
 manifest <- read_tsv(opt$manifest)
 headers <- colnames(manifest)
-filename <- 'id'
+headers[headers == 'id'] <- 'outcome.id'
+colnames(manifest) <- headers
+
+filename <- 'outcome.id'
+cols_interest <- c('outcome.id', 'trait', 'note', 'group_name', 'year', 'author', 'sex', 'pmid', 'population', 'unit', 'sample_size', 'nsnp', 'build', 'category', 'subcategory', 'ontology', 'consortium', 'ncase', 'ncontrol')
 
 manifest <- as.data.frame(manifest)
 rownames(manifest) <- manifest[,filename]
@@ -31,7 +35,7 @@ query <- read.table(opt$query)[[1]]
 index <- which(manifest[,filename] %in% query)
 
 if (!file.exists(opt$error)) {
-  write.table(c('File', 'Error'), opt$error, row.names=FALSE, col.names=FALSE, quote=FALSE, sep='\t')
+  write.table(t(c('File', 'Error')), opt$error, row.names=FALSE, col.names=FALSE, quote=FALSE, sep=',')
 }
 
 pop <- c()
@@ -45,8 +49,17 @@ if (opt$pop == "EUR") {
   pop <- c("African American or Afro-Caribbean", "Mixed", "Other admixed ancestry")
 }
 
-write.table(cbind(manifest[index[!manifest[index,'population'] %in% pop],filename], 'Population Missing'), opt$error, col.names=FALSE, quote=FALSE, append=TRUE, sep=',')
+if (length(index[!manifest[index,'population'] %in% pop]) > 0) {
+  write.table(cbind(manifest[index[!manifest[index,'population'] %in% pop],filename], 'Population Missing'), opt$error, col.names=FALSE, quote=FALSE, append=TRUE, sep=',')
+}
+
+if (length(which(!query %in% manifest[,filename])) > 0) {
+  write.table(cbind(query[!query %in% manifest[,filename]], 'Outcome Phenotype Not Found'), opt$error, col.names=FALSE, quote=FALSE, append=TRUE, sep=',')
+}
 
 write.table(manifest[index[manifest[index,'population'] %in% pop],filename], opt$output, row.names=FALSE, col.names=FALSE, quote=FALSE)
 
-write.table(manifest[index[manifest[index,'population'] %in% pop], ], opt$metadata, row.names=FALSE, sep='\t')
+write.table(manifest[index[manifest[index,'population'] %in% pop], cols_interest], opt$metadata, row.names=FALSE, sep='\t')
+
+write.table(manifest[index[manifest[index,'population'] %in% pop], ], paste0(tools::file_path_sans_ext(opt$metadata), '_full.csv'), row.names=FALSE, sep='\t')
+
