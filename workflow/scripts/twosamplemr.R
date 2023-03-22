@@ -53,7 +53,7 @@ process_exposure <- function(x) {
                                 pval_col = grep('log10', discovery, ignore.case=TRUE, value=TRUE),
                                 log_pval = TRUE)
     exposure_dat$id.exposure <- tools::file_path_sans_ext(basename(x))
-  }else if (opt$exp_flag == "levy") {
+  }else if (opt$exp_flag == "template1") {
     addition <- as.data.frame(stringr::str_split(exp[,'SNP'], ':', simplify=T))[,1:5]
     colnames(addition) <- c("Chromosome", "hg38_genpos", "A0", "A1", "RSID")
     exp <- cbind(exp, addition)

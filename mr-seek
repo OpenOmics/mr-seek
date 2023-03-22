@@ -475,7 +475,7 @@ def parsed_arguments(name, description):
     # Exposure format
     subparser_run.add_argument(
         '--input_qtl',
-        choices=['eqtl', 'mqtl', 'pqtl', 'levy'],
+        choices=['eqtl', 'mqtl', 'pqtl', 'template1'],
         type = str.lower,
         required = False,
         default = None,
