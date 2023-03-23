@@ -283,10 +283,10 @@ def parsed_arguments(name, description):
                                   Example: --output /data/$USER/output
 
         {3}{4}Analysis options:{5}
-          --input_qtl {{eqtl, mqtl, pqtl}}
+          --input_qtl {{pqtl, template1}}
                                 When exposure file is a quantitative trait locus file
                                 to process, this flag should be used to define the type
-                                of QTL file it is. Valid options are eqtl, mqtl, or pqtl.
+                                of QTL file it is. Valid options are pqtl or template1.
                                   Example: --input_qtl pqtl
           --pop {{AFR, AMR, EAS, EUR}}
                                 Super-population to use when extracting data from Neale
@@ -475,7 +475,7 @@ def parsed_arguments(name, description):
     # Exposure format
     subparser_run.add_argument(
         '--input_qtl',
-        choices=['eqtl', 'mqtl', 'pqtl', 'template1'],
+        choices=['pqtl', 'template1'],
         type = str.lower,
         required = False,
         default = None,
