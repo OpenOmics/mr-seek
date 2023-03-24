@@ -22,7 +22,7 @@ opt <- parse_args(OptionParser(option_list=option_list))
 manifest <- read_tsv(opt$manifest)
 headers <- colnames(manifest)
 filename <- grep('tabix', grep('filename', headers, ignore.case=TRUE, value=TRUE), ignore.case=TRUE, value=TRUE, invert=TRUE)
-query <- read.table(opt$query)[[1]]
+query <- read.table(opt$query, sep='\t')[[1]]
 
 get_populated_rows <- function(query) {
   names <- c()

@@ -22,7 +22,7 @@ manifest <- read_tsv(opt$manifest)
 headers <- colnames(manifest)
 filename <- 'id'
 
-query <- read.table(opt$query)[[1]]
+query <- read.table(opt$query, sep='\t')[[1]]
 
 get_populated_rows <- function(query) {
   names <- c()
