@@ -130,7 +130,7 @@ if (opt$database == 'neale'){
   #files <- unique(files)
 
   out <- read.table(opt$out)
-  files <- sapply(out, function(x) gsub('tsv.bgz', 'rsid.tsv.gz', x))
+  files <- sapply(out, function(x) paste0(x, '.rsid.tsv.gz'))
   print(files)
   for (filename in files) {
     tryCatch({
