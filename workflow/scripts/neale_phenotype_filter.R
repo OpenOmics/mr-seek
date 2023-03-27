@@ -1,5 +1,6 @@
 library(readr)
 library(optparse)
+library(dplyr)
 
 option_list <- list(
   make_option(c("-q", "--query"), type='character', action='store', default=NA,
@@ -53,4 +54,4 @@ write.table(manifest[query[rowSums(manifest[index,grep('^n_', grep(opt$pop, head
 
 write.table(manifest[query[rowSums(manifest[index,grep('^n_', grep(opt$pop, headers, value=TRUE), value=TRUE)], na.rm=TRUE) >0], cols_interest], opt$metadata, row.names=FALSE, sep='\t')
 
-write.table(manifest[query[rowSums(manifest[index,grep('^n_', grep(opt$pop, headers, value=TRUE), value=TRUE)], na.rm=TRUE) >0], ], paste0(tools::file_path_sans_ext(opt$metadata), '_full.csv'), row.names=FALSE, sep='\t')
+write.table(manifest[query[rowSums(manifest[index,grep('^n_', grep(opt$pop, headers, value=TRUE), value=TRUE)], na.rm=TRUE) >0], ] %>% relocate(!!filename), paste0(tools::file_path_sans_ext(opt$metadata), '_full.csv'), row.names=FALSE, sep='\t')
