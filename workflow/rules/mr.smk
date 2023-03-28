@@ -51,7 +51,7 @@ def rds_plot_flags(wildcards):
     names = {'ieu': 'ieuGWAS', 'neale': 'Pan-UKBB'}
     flags = {'manifest':dict(), 'manifest_name': dict()}
     for key in config["database_manifest"].keys():
-        flags['manifest'][key] = config["database_manifest"][key]
+        flags['manifest'][key] = ''.join([os.path.splitext(config["database_manifest"][key])[0], '_short', os.path.splitext(config["database_manifest"][key])[1]])
         flags['manifest_name'][key] = names[key]
     return(' '.join([f"--{flag} " + ','.join(flags[flag].values()) for flag in flags]))
 
