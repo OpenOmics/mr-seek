@@ -47,6 +47,16 @@ def twosamplemr_outcome_input(wildcards):
 def twosamplemr_outcome_flag(wildcards):
     return(','.join(twosamplemr_outcome_input(wildcards)))
 
+def rds_plot_flags(wildcards):
+    names = {'ieu': 'ieuGWAS', 'neale': 'Pan-UKBB'}
+    flags = {'manifest':dict(), 'manifest_name': dict()}
+    for key in config["database_manifest"].keys():
+        flags['manifest'][key] = config["database_manifest"][key]
+        flags['manifest_name'][key] = names[key]
+    return(' '.join([f"--{flag} " + ','.join(flags[flag].values()) for flag in flags]))
+
+
+
 rule neale_preprocess:
     #input: phenotype_list = neale_preprocess_input
     input: phenotype_list = join(workpath, "query", "phenotype_id_filter.csv")
@@ -121,6 +131,8 @@ rule twosamplemr:
         res = join(workpath, "mr", "res.tsv"),
         data = join(workpath, "mr", "harmonised_dat.tsv"),
         loo = join(workpath, "mr", "res_loo.tsv"),
+        heterogeneity = join(workpath, "mr", "mr_heterogeneity.tsv"),
+        pleiotropy = join(workpath, "mr", "mr_pleiotropy.tsv"),
         sessionInfo = join(workpath, "mr", "twosamplemr_session.log")
     log:
         join(workpath, "mr", "twosamplemr.log")
@@ -154,7 +166,10 @@ rule rds_plot:
         res = rules.twosamplemr.output.res,
         data = rules.twosamplemr.output.data,
         loo = rules.twosamplemr.output.loo,
-        sessionInfo = rules.twosamplemr.output.sessionInfo
+        heterogeneity = rules.twosamplemr.output.heterogeneity,
+        pleiotropy = rules.twosamplemr.output.pleiotropy,
+        sessionInfo = rules.twosamplemr.output.sessionInfo,
+        phenotype_metadata = rules.phenotype_filter.output.phenotype_metadata
     output:
         rds = join(workpath, "mr", "all_plots.rds")
     log:
@@ -162,6 +177,7 @@ rule rds_plot:
     params:
         rname = "rds_plot",
         error = errorlog,
+        additional_flags = rds_plot_flags,
         script = join(workpath, "workflow", "scripts", "twosamplemr_report.R")
     container: config["images"]["mr-base"]
     shell:
@@ -170,10 +186,14 @@ rule rds_plot:
             --data {input.data} \\
             --single {input.single} \\
             --loo {input.loo} \\
+            --heterogeneity {input.heterogeneity} \\
+            --pleiotropy {input.pleiotropy} \\
+            --metadata {input.phenotype_metadata} \\
             --out {output.rds} \\
             --version {input.sessionInfo} \\
             --failed {params.error} \\
-            --include_data
+            --include_data \\
+            {params.additional_flags} \\
             > {log} 2>&1
         """
 
