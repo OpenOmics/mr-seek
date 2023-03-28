@@ -1,4 +1,4 @@
-library(MRPlotly, lib.loc='/data/chenv3/mr-seek_tools')
+library(MRPlotly)
 library(TwoSampleMR)
 library(optparse)
 
