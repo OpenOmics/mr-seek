@@ -7,20 +7,20 @@ Directly below are instructions for building an image using the provided Dockerf
 docker image ls
 
 # Build from Dockerfile
-docker build --no-cache -f Dockerfile --tag=mr-seek:v0.2.0 .
+docker build --no-cache -f Dockerfile --tag=mr-seek:v0.3.0 .
 
 # Testing, take a peek inside
-docker run -ti mr-seek:v0.2.0 /bin/bash
+docker run -ti mr-seek:v0.3.0 /bin/bash
 
 # Updating Tag  before pushing to DockerHub
-docker tag mr-seek:v0.2.0 skchronicles/mr-seek:v0.2.0
-docker tag mr-seek:v0.2.0 skchronicles/mr-seek         # latest
+docker tag mr-seek:v0.3.0 skchronicles/mr-seek:v0.3.0
+docker tag mr-seek:v0.3.0 skchronicles/mr-seek         # latest
 
 # Check out new tag(s)
 docker image ls
 
 # Push new tagged image to DockerHub
-docker push skchronicles/mr-seek:v0.2.0
+docker push skchronicles/mr-seek:v0.3.0
 docker push skchronicles/mr-seek:latest
 ```
 
@@ -29,7 +29,7 @@ docker push skchronicles/mr-seek:latest
 Scan your image for known vulnerabilities:
 
 ```bash
-docker scan mr-seek:v0.2.0
+docker scan mr-seek:v0.3.0
 ```
 
 > **Please Note**: Any references to `skchronicles` should be replaced your username if you would also like to push the image to a non-org account.
