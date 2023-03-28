@@ -1,5 +1,5 @@
 {
     "images": {
-        "mr-base": "/data/OpenOmics/SIFs/mr-seek_v0.2.0.sif"
+        "mr-base": "docker://skchronicles/mr-seek:v0.3.0"
     }
 }
