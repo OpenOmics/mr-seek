@@ -465,6 +465,15 @@ def parsed_arguments(name, description):
         help = argparse.SUPPRESS
     )
 
+    # Database
+    subparser_run.add_argument(
+        '--database',
+        choices=['ieu', 'neale'],
+        type = str.lower,
+        required = True,
+        default = None,
+        help = argparse.SUPPRESS
+    )
 
 
     # Optional Arguments
@@ -493,16 +502,6 @@ def parsed_arguments(name, description):
         type = str.upper,
         required = False,
         default = 'EUR',
-        help = argparse.SUPPRESS
-    )
-
-    # Database
-    subparser_run.add_argument(
-        '--database',
-        choices=['ieu', 'neale'],
-        type = str.lower,
-        required = False,
-        default = None,
         help = argparse.SUPPRESS
     )
 
