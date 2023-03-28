@@ -98,7 +98,7 @@ for (filename in exp_files) {
   tryCatch({
     exposure_dat <- rbind(exposure_dat, process_exposure(filename))
   }, error=function(cond) {
-    write.table(cbind(basename(filename), 'Problem Loading Exposure File for MR'), opt$error, col.names=FALSE, quote=FALSE, append=TRUE, sep=',')
+    write.table(cbind(basename(filename), 'Problem Loading Exposure File for MR'), opt$error, row.names=FALSE, col.names=FALSE, quote=FALSE, append=TRUE, sep=',')
   })
 }
 

@@ -43,11 +43,11 @@ if (!file.exists(opt$error)) {
 }
 
 if (length(which(!query %in% manifest[,filename])) > 0) {
-  write.table(cbind(query[!query %in% manifest[,filename]], 'Outcome Phenotype Not Found'), opt$error, col.names=FALSE, quote=FALSE, append=TRUE, sep=',')
+  write.table(cbind(query[!query %in% manifest[,filename]], 'Outcome Phenotype Not Found'), opt$error, row.names=FALSE, col.names=FALSE, quote=FALSE, append=TRUE, sep=',')
 }
 
 if (sum(rowSums(manifest[index,grep('^n_', grep(opt$pop, headers, value=TRUE), value=TRUE)], na.rm=TRUE) == 0)) {
-  write.table(cbind(manifest[query[rowSums(manifest[index,grep('^n_', grep(opt$pop, headers, value=TRUE), value=TRUE)], na.rm=TRUE) == 0], filename], 'Population Missing'), opt$error, col.names=FALSE, quote=FALSE, append=TRUE, sep=',')
+  write.table(cbind(manifest[query[rowSums(manifest[index,grep('^n_', grep(opt$pop, headers, value=TRUE), value=TRUE)], na.rm=TRUE) == 0], filename], 'Population Missing'), opt$error, row.names=FALSE, col.names=FALSE, quote=FALSE, append=TRUE, sep=',')
 }
 
 write.table(manifest[query[rowSums(manifest[index,grep('^n_', grep(opt$pop, headers, value=TRUE), value=TRUE)], na.rm=TRUE) > 0], filename], opt$output, row.names=FALSE, col.names=FALSE, quote=FALSE)

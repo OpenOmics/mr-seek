@@ -50,11 +50,11 @@ if (opt$pop == "EUR") {
 }
 
 if (length(index[!manifest[index,'population'] %in% pop]) > 0) {
-  write.table(cbind(manifest[index[!manifest[index,'population'] %in% pop],filename], 'Population Missing'), opt$error, col.names=FALSE, quote=FALSE, append=TRUE, sep=',')
+  write.table(cbind(manifest[index[!manifest[index,'population'] %in% pop],filename], 'Population Missing'), opt$error, row.names=FALSE, col.names=FALSE, quote=FALSE, append=TRUE, sep=',')
 }
 
 if (length(which(!query %in% manifest[,filename])) > 0) {
-  write.table(cbind(query[!query %in% manifest[,filename]], 'Outcome Phenotype Not Found'), opt$error, col.names=FALSE, quote=FALSE, append=TRUE, sep=',')
+  write.table(cbind(query[!query %in% manifest[,filename]], 'Outcome Phenotype Not Found'), opt$error, row.names=FALSE, col.names=FALSE, quote=FALSE, append=TRUE, sep=',')
 }
 
 write.table(manifest[index[manifest[index,'population'] %in% pop],filename], opt$output, row.names=FALSE, col.names=FALSE, quote=FALSE)
