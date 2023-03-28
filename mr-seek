@@ -274,6 +274,14 @@ def parsed_arguments(name, description):
                                 database then the additional flag should be used to define the
                                 database it is.
                                   Example: --outcome outcome.csv
+          --database {{ieu, neale}}
+                                Database to extract phenotypes from when a list of
+                                phenotypes are provided. The ieu option would extract
+                                data for the IEU GWAS database made available through
+                                ieugwasr. The neale option would use the downloaded PAN-UK
+                                Biobank data hosted on Biowulf. through links provided by the Neale lab.
+                                The PAN-UK Biobank data needs to be downloaded and processed.
+                                  Example: --database neale
           --output OUTPUT
                                 Path to an output directory. This location is where
                                 the pipeline will create all of its output files, also
@@ -295,14 +303,6 @@ def parsed_arguments(name, description):
                                 supported. Valid options for this are: AFR, AMR, EAS, EUR.
                                 Default: EUR
                                   Example: --pop EUR
-          --database {{ieu, neale}}
-                                Database to extract phenotypes from when a list of
-                                phenotypes are provided. The ieu option would extract
-                                data for the IEU GWAS database made available through
-                                ieugwasr. The neale option would use the downloaded PAN-UK
-                                Biobank data hosted on Biowulf. through links provided by the Neale lab.
-                                The PAN-UK Biobank data needs to be downloaded and processed.
-                                  Example: --database neale
           --outcome_pval_threshold THRESHOLD
                                 Optional float value that will be used as a p-value threshold
                                 to filter the PAN-UK Biobank SNPs. If no threshold is provided
