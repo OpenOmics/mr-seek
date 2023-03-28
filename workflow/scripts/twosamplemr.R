@@ -20,7 +20,13 @@ option_list <- list(
   make_option(c("-d", "--database"), type='character', action='store', default=NA,
     help="Database to download gwas from"),
   make_option(c("-c", "--clump"), action='store_true', default=FALSE,
-    help="Run clumping on harmonised data")
+    help="Run clumping on harmonised data"),
+  make_option(c("--path"), type='character', action='store', default=NA,
+    help="Path to where database files are saved"),
+  make_option(c("--pval"), type='double', action='store', default=NA,
+    help="P-value threshold used to filter outcome SNPs for Neale database"),
+  make_option(c("--error"), type='character', action='store', default=NA,
+    help="Error file to log any exposure or outcome files that failed")
 )
 
 opt <- parse_args(OptionParser(option_list=option_list))
@@ -47,6 +53,24 @@ process_exposure <- function(x) {
                                 pval_col = grep('log10', discovery, ignore.case=TRUE, value=TRUE),
                                 log_pval = TRUE)
     exposure_dat$id.exposure <- tools::file_path_sans_ext(basename(x))
+  }else if (opt$exp_flag == "template1") {
+    addition <- as.data.frame(stringr::str_split(exp[,'SNP'], ':', simplify=T))[,1:5]
+    colnames(addition) <- c("Chromosome", "hg38_genpos", "A0", "A1", "RSID")
+    exp <- cbind(exp, addition)
+    exp$SE <- exp[,grep('Fx', colnames(exp), ignore.case=TRUE, value=TRUE)] / exp$T
+    exp$log10P <- -exp$log10P
+    exposure_dat <- format_data(exp, type="exposure",
+                                snp_col = grep("RSID", colnames(exp), ignore.case=TRUE, value=TRUE),
+                                beta_col = grep('Fx', colnames(exp), ignore.case=TRUE, value=TRUE),
+                                se_col = grep('^SE', colnames(exp), ignore.case=TRUE, value=TRUE),
+                                eaf_col = grep('EAF', colnames(exp), ignore.case=TRUE, value=TRUE),
+                                effect_allele_col = "A1",
+                                other_allele_col = "A0",
+                                chr_col = 'Chromosome',
+                                pos_col = 'hg38_genpos',
+                                pval_col = grep('log10', colnames(exp), ignore.case=TRUE, value=TRUE),
+                                log_pval = TRUE)
+    exposure_dat$id.exposure <- tools::file_path_sans_ext(basename(x))
   }else if (dim(exp)[[2]] == 1) {
     # Get instruments or SNPs: This function searches for GWAS significant SNPs (for a given p-value) for a specified set of outcomes. It then performs LD based clumping to return only independent significant associations.
     exposure_dat = extract_instruments(
@@ -70,7 +94,12 @@ exp_files <- strsplit(opt$exp, ',')[[1]]
 exp_files <- unique(exp_files)
 exposure_dat <- c()
 for (filename in exp_files) {
-  exposure_dat <- rbind(exposure_dat, process_exposure(filename))
+  print(filename)
+  tryCatch({
+    exposure_dat <- rbind(exposure_dat, process_exposure(filename))
+  }, error=function(cond) {
+    write.table(cbind(basename(filename), 'Problem Loading Exposure File for MR'), opt$error, row.names=FALSE, col.names=FALSE, quote=FALSE, append=TRUE, sep=',')
+  })
 }
 
 if (opt$clump) {
@@ -90,27 +119,48 @@ exp_snp_list$custom <- tolower(paste(exposure_dat$chr.exposure, exposure_dat$pos
 exp_snp_list <- as.data.frame(exp_snp_list)
 exp_snp_list <- exp_snp_list %>%  distinct(.keep_all = TRUE)
 
-if (opt$database == 'neale'){
-  rownames(exp_snp_list) <- exp_snp_list$rsid
-  exposure_dat$SNP <- exp_snp_list[exposure_dat$SNP,'custom']
-}
+#if (opt$database == 'neale'){
+#  rownames(exp_snp_list) <- exp_snp_list$rsid
+#  exposure_dat$SNP <- exp_snp_list[exposure_dat$SNP,'custom']
+#}
 
 if (opt$database == 'neale'){
   outcome_dat <- c()
-  files <- strsplit(opt$out, ',')[[1]]
-  files <- unique(files)
+  #files <- strsplit(opt$out, ',')[[1]]
+  #files <- unique(files)
+
+  out <- read.table(opt$out)
+  files <- sapply(out, function(x) paste0(x, '.rsid.tsv.gz'))
   print(files)
   for (filename in files) {
-    try({
-    data <- fread(filename)
+    tryCatch({
+    #data <- fread(filename)
+    data <- fread(file.path(opt$path, filename))
     print(filename)
+
+    if (!is.na(opt$pval)) {
+      data <- data[which(data[[paste0('pval_', opt$pop)]]  < log(opt$pval)),]
+    }
+
     data[[paste0('pval_', opt$pop)]] <- exp(data[[paste0('pval_', opt$pop)]])
     af <- grep(opt$pop, grep('af', colnames(data), value=TRUE), value=TRUE)
     if (length(af) == 2) {
         af <- grep('cases', af, value=TRUE)
     }
-    data$custom_id <- paste(data$chr, data$pos, data$ref, data$alt, sep='_')
-    out_data <- format_data(data, type="outcome", snp_col="custom_id", #snp_col="rsid",
+    #data$custom_id <- paste(data$chr, data$pos, data$ref, data$alt, sep='_')
+
+    #Split output rsids
+    out_rsid <- stringr::str_split(data$rsid, ',', simplify=TRUE)
+    #Find all matching rsids
+    temp <- sapply(1:dim(out_rsid)[2], function(x) match(exposure_dat$SNP, out_rsid[,x]))
+    #Get location of all matching rsids and the input row they belong to
+    match_id <- sapply(which(rowSums(!is.na(temp)) > 0), function(x) temp[x,!is.na(temp[x,])][[1]])
+    names(match_id) <- which(rowSums(!is.na(temp)) > 0)
+    no_match <- which(rowSums(!is.na(temp)) == 0)
+    data_subset <- data[match_id,]
+    data_subset$rsid_new <- exposure_dat$SNP[as.integer(names(match_id))]
+
+    out_data <- format_data(data_subset, type="outcome", snp_col="rsid_new",
         beta_col=paste0("beta_", opt$pop), se_col=paste0("se_", opt$pop),
         eaf_col=paste0(af), effect_allele_col="alt",
         other_allele_col="ref", pval_col = paste0("pval_", opt$pop))
@@ -118,9 +168,11 @@ if (opt$database == 'neale'){
     out_data$outcome <- strsplit(basename(filename), '\\.')[[1]][[1]]
     out_data$id.outcome <- strsplit(basename(filename), '\\.')[[1]][[1]]
     outcome_dat <- rbind(outcome_dat, out_data[out_data$SNP %in% exposure_dat$SNP,])
+  }, error=function(cond) {
+    write.table(cbind(basename(filename), 'Problem Loading Neale Phenotype for MR'), opt$error, col.names=FALSE, quote=FALSE, append=TRUE, sep=',')
   })}
 } else if (opt$database == 'ieu') {
-  out <- read.table(opt$out, header=TRUE)
+  out <- read.table(opt$out)
   if (dim(out)[[2]] == 1) {
     # Get effects of instruments on outcome
     outcome_dat = extract_outcome_data(
@@ -151,10 +203,10 @@ dat <- harmonise_data(
             # But multiple values can be supplied as a vector, each element relating to a different outcome.
 
 
-if (opt$database == 'neale'){
-  rownames(exp_snp_list) <- exp_snp_list$custom
-  dat$SNP <- exp_snp_list[dat$SNP, 'rsid']
-}
+#if (opt$database == 'neale'){
+#  rownames(exp_snp_list) <- exp_snp_list$custom
+#  dat$SNP <- exp_snp_list[dat$SNP, 'rsid']
+#}
 
 # Perform MR
 res <- mr(dat, #Harmonised exposure and outcome data. Output from harmonise_data.
