@@ -18,7 +18,7 @@ def main(raw_args=None):
         action = "store", type=str, required=True,
         help="Input GWAS files")
     parser.add_argument("-t", "--threshold", metavar="0.01",
-        action = "store", type=threshold_import, default=None,
+        action = "store", type=threshold_import, default='None',
         help="P-Value threshold to filter the SNPs by"),
     parser.add_argument("-p", "--population", metavar="EUR",
         action = "store", type=str, choices=["AFR", "AMR", "EAS", "EUR"],
@@ -38,10 +38,15 @@ def main(raw_args=None):
             h = gzip.open(os.path.join(os.path.dirname(args.output), f"filter.{os.path.splitext(os.path.basename(args.output))[0]}.tsv.gz"), 'wt')
             h.write(header)
         header = header.strip().split('\t')
-        indexes = {i: header.index(col_headers[i]) for i in col_headers}
+        indexes = {i: header.index(col_headers[i]) if col_headers[i] in header else -1 for i in col_headers}
         current = ""
         gheader = 'chr\tstart\tend\tallele\tstrand'
         with open(args.output, 'w') as g:
+            if args.threshold != "None":
+                if indexes['pval'] == -1:
+                   with open(args.output + ".error", 'w') as err:
+                     err.write("Missing population")
+                   return() 
             for line in f:
                 values = line.strip().split('\t')
                 vals = {i: values[indexes[i]] for i in indexes}
@@ -56,11 +61,15 @@ def main(raw_args=None):
                 if vals['ref'] == '-':
                     length = length - 1
                 if len(vals['alt']) > len(vals['ref']):
-                    length = -1
                     if vals['ref'] == vals['alt'][:len(vals['ref'])]:
+                        length = -1
                         vals['pos'] = str(int(vals['pos'])+len(vals['ref']))
                         vals['alt'] = vals['alt'][len(vals['ref']):]
                         vals['ref'] = '-'
+                    else:
+                        length = len(vals['ref']) - 1
+                elif len(vals['alt']) > 1 and len(vals['ref']) > 1:
+                    length = len(vals['ref']) - 1
                 g.write(f"{vals['chr']}\t{vals['pos']}\t{str(int(vals['pos'])+length)}\t{vals['ref']}/{vals['alt']}\t+\n")
 
 if __name__ == '__main__':

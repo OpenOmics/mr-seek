@@ -13,16 +13,17 @@ $ mr-seek run [--help] \
       [--dry-run] [--job-name JOB_NAME] [--mode {slurm,local}] \
       [--sif-cache SIF_CACHE] [--singularity-cache SINGULARITY_CACHE] \
       [--silent] [--threads THREADS] [--tmp-dir TMP_DIR] \
-      [--input_qtl INPUT_QTL] [--pop POP] [--database DATABASE] \
+      [--input_qtl INPUT_QTL] [--pop POP] [--keyword] \
       [--outcome_pval_threshold PVAL_THRESHOLD] [--clump] \
       --exposure EXPOSURE \
       --outcome OUTCOME \
-      --output OUTPUT
+      --output OUTPUT \
+      --database DATABASE
 ```
 
 The synopsis for each command shows its arguments and their usage. Optional arguments are shown in square brackets.
 
-A user **must** provide a list of exposure and outcome to analyze via `--exposure`  and `--outcome` arguments and an output directory to store results via `--output` argument.
+A user **must** provide a list of exposure and outcome to analyze via `--exposure`  and `--outcome` arguments, a database via `--database` argument where the outcome phenotypes will be extracted, and an output directory to store results via `--output` argument.
 
 Use you can always use the `-h` option for information on a specific command.
 
@@ -31,19 +32,69 @@ Use you can always use the `-h` option for information on a specific command.
 Each of the following arguments are required. Failure to provide a required argument will result in a non-zero exit-code.
 
   `--exposure EXPOSURE [EXPOSURE ...]`  
-> **Input exposure QTL or phenotype list.**  
+> **Input exposure QTL or IEU phenotype list.**  
 > *type: file*  
 >
-> The file should be either a list of exposures available in a database or exposure file to read and process. If a QTL file is provided then an additional flag should be used to define the format it is. If multiple files are provided from the command-line, each input file should seperated by a space. Globbing is supported!
->
-> ***Example:*** `--exposure eQTL.csv`
+> The file should be either a list of exposures available in a database or exposure file to read and process. If a QTL file is provided then an additional flag should be used to define the format it is. If multiple files are provided from the command-line, each input file should separated by a space. Globbing is supported!
+
+> The exposure in template1 format is expecting the columns SNP, EAF, Fx, T, and log10P in the file. Additional columns may be included, if the column names do not overlap with the expected columns.
+
+> *Here is an example file in template1 format*
+
+> ```
+>SNP,EAF,RSq,Fx,T,log10P
+>chr11:74892136:G:A:rs4944963,0.25609756097561,4.71878026147098,121.891586792572,-641.982748296929
+>chr11:74931506:G:A:rs10899051,0.25609756097561,4.71878026147098,121.891586792572,-641.982748296929
+>chr11:74933260:C:T:rs7102619,0.25609756097561,4.71878026147098,121.891586792572,-641.982748296929
+>chr11:74935168:T:C:rs10899052,0.25609756097561,4.71878026147098,121.891586792572,-641.982748296929
+> ```
+
+>*Where*
+
+> - *SNP:* Comma separated containing information about the SNP in the following order:
+>        * SNP chromosome number
+>        * SNP chromosome position
+>        * Reference allele
+>        * Alternate allele
+>        * RSID
+> - *EAF:* Effect allele frequency
+> - *Fx:* Effect size
+> - *T:* T-statistic (also obtained by effect size / standard error)
+> - *log10P:* P-value in log10P form
+
+> The exposure in pqtl format is expecting the columns SNP, rsID, BETA, SE, A1FREQ, log10 in the file, with SNP being the first column in the file. Additional columns may be included, if the column names do not overlap with the expected columns.
+
+> *Here is an example file in pqtl format*
+
+> ```
+>Variant ID (CHROM:GENPOS (hg37):A0:A1),rsID,A1FREQ_discovery,BETA_discovery,SE_discovery,log10p_discovery
+>17:41140545:C:T,rs323500,0.2903,0.133,0.008,63.6
+>3:52004097:C:CG,rs373373105,0.0121,-1.444,0.035,368.1
+>3:38170810:C:G,rs156265,0.1441,-0.126,0.011,31.3
+>15:89252012:T:A,rs11073804,0.1981,0.133,0.009,52.8
+> ```
+
+>*Where*
+
+> - *SNP:* First column in the file. Comma separated containing information about the SNP in the following order:
+>        * SNP chromosome number
+>        * SNP chromosome position
+>        * Reference allele
+>        * Alternate allele
+> - *rsID:* dbSNP Reference SNP number (unique SNP identifier)
+> - *BETA:* Effect size
+> - *SE:* Standard error
+> - *A1FREQ:* Effect allele frequency
+> - *log10P:* P-value in -log10P form
+
+> ***Example:*** `--exposure pQTL.csv`
 
 ---  
 `--outcome OUTCOME [OUTCOME ...]`  
-> **Input phenotype list.**  
+> **Input phenotype or keyword list.**  
 > *type: file*  
 >
-> The file should be a list of outcomes available in a database. Currently support is only available for one file at a time. An additional flag should be used to specify which database to extract the entries from.
+> The file should be a list of outcomes available in a database or keywords to extract outcomes based on, with one entry per line. Currently support is only available for one file at a time. An additional flag should be used to specify if the input is a list of query keywords.
 >
 > ***Example:*** `--outcome outcome.csv`
 
@@ -56,15 +107,24 @@ Each of the following arguments are required. Failure to provide a required argu
 >
 > ***Example:*** `--output /data/$USER/mr-seek_out`
 
+---
+`--database {ieu, neale}`
+> **Database to use**   
+> *type: string*
+>   
+> Database to extract phenotypes from when a list of phenotypes are provided. The ieu option would extract data for the IEU GWAS database made available through the R package [ieugwasr](https://mrcieu.github.io/ieugwasr/). The neale option would use the [PAN-UK Biobank](https://pan.ukbb.broadinstitute.org) data hosted on Biowulf. The PAN-UK Biobank data will be processed prior to analysis.
+>
+> ***Example:*** `--database neale`
+
 ### 2.2 Analysis options
 
 Each of the following arguments are optional, and do not need to be provided.
 
-`--input_qtl {eqtl, mqtl, pqtl}`
+`--input_qtl {pqtl, template1}`
 > **Type of QTL file provided**   
 > *type: string*
 >   
-> When the exposure file is a quantitative trait locus file to process, this flag should be used to define the type of QTL file it is. Currently only pqtl format is supported. Work is still being done to support eqtl and mqtl files in the future. Valid options are eqtl, mqtl, or pqtl.
+> When exposure file is a quantitative trait locus file to process, this flag should be used to define the type of QTL file it is. Valid options are pqtl or template1.
 >
 > ***Example:*** `--input_qtl pqtl`
 
@@ -78,20 +138,11 @@ Each of the following arguments are optional, and do not need to be provided.
 > ***Example:*** `--pop EUR`
 
 ---
-`--database {ieu, neale}`
-> **Database to use**   
-> *type: string*
->   
-> Database to extract phenotypes from when a list of phenotypes are provided. The ieu option would extract data for the IEU GWAS database made available through the R package [ieugwasr](https://mrcieu.github.io/ieugwasr/). The neale option would use the [PAN-UK Biobank](https://pan.ukbb.broadinstitute.org) data hosted on Biowulf. The PAN-UK Biobank data will be processed prior to analysis.
->
-> ***Example:*** `--database neale`
-
----
 `--outcome_pval_threshold THRESHOLD`
 > **P-Value threshold to filter PAN-UK Biobank SNPs**   
 > *type: float*
 >   
-> Float value that will be used as a p-value threshold to filter the PAN-UK Biobank SNPs. If no threshold is provided then no filter would be used. 
+> Float value that will be used as a p-value threshold to filter the PAN-UK Biobank SNPs. If no threshold is provided then no filter would be used.
 >
 > ***Example:*** `--outcome_pval_threshold 0.01`
 
@@ -211,10 +262,10 @@ module purge
 module load singularity snakemake
 
 # Step 2A.) Dry-run the pipeline
-./mr-seek run --exposure .tests/pqtl.csv \
+./mr-seek run --exposure .tests/template1.csv \
                   --outcome .tests/ieu_10.csv \
                   --output /data/$USER/output \
-                  --input_qtl pqtl \
+                  --input_qtl template1 \
                   --database ieu \
                   --mode slurm \
                   --dry-run
@@ -223,10 +274,10 @@ module load singularity snakemake
 # The slurm mode will submit jobs to
 # the cluster. It is recommended running
 # the pipeline in this mode.
-./mr-seek run --exposure .tests/pqtl.csv \
+./mr-seek run --exposure .tests/template1.csv \
                   --outcome .tests/ieu_10.csv \
                   --output /data/$USER/output \
-                  --input_qtl pqtl \
+                  --input_qtl template1 \
                   --database ieu \
                   --mode slurm
 ```
