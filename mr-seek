@@ -244,18 +244,19 @@ def parsed_arguments(name, description):
                 [--dry-run] [--job-name JOB_NAME] [--mode {{slurm,local}}] \\
                 [--sif-cache SIF_CACHE] [--singularity-cache SINGULARITY_CACHE] \\
                 [--silent] [--threads THREADS] [--tmp-dir TMP_DIR] \\
-                [--input_qtl INPUT_QTL] [--pop POP] [--database DATABASE] \\
-                [--outcome_pval_threshold PVAL_THRESHOLD] [--clump] [--keyword] \\
+                [--input_qtl INPUT_QTL] [--pop POP] [--keyword] \\
+                [--outcome_pval_threshold PVAL_THRESHOLD] [--clump] \\
                 --exposure EXPOSURE \\
                 --outcome OUTCOME \\
-                --output OUTPUT
+                --output OUTPUT \\
+                --database DATABASE
 
         Optional arguments are shown in square brackets above.
 
         {3}{4}Description:{5}
           To run the mendelian randomization pipeline name with your data, please
         provide the exposure and outcome to compare and an output directory to
-        store results.
+        store results, and a database to extract phenotypes from.
 
         {3}{4}Required arguments:{5}
           --exposure EXPOSURE [EXPOSURE ...]
