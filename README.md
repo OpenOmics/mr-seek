@@ -4,7 +4,7 @@
   
   **_Mendelian randomization pipeline_**
 
-  [![tests](https://github.com/OpenOmics/mr-seek/workflows/tests/badge.svg)](https://github.com/OpenOmics/mr-seek/actions/workflows/main.yaml) [![docs](https://github.com/OpenOmics/mr-seek/workflows/docs/badge.svg)](https://github.com/OpenOmics/mr-seek/actions/workflows/docs.yml) [![GitHub issues](https://img.shields.io/github/issues/OpenOmics/mr-seek?color=brightgreen)](https://github.com/OpenOmics/mr-seek/issues)  [![GitHub license](https://img.shields.io/github/license/OpenOmics/mr-seek)](https://github.com/OpenOmics/mr-seek/blob/main/LICENSE) 
+  [![Docker Pulls](https://img.shields.io/docker/pulls/skchronicles/mr-seek)](https://hub.docker.com/repository/docker/skchronicles/mr-seek) [![tests](https://github.com/OpenOmics/mr-seek/workflows/tests/badge.svg)](https://github.com/OpenOmics/mr-seek/actions/workflows/main.yaml) [![docs](https://github.com/OpenOmics/mr-seek/workflows/docs/badge.svg)](https://github.com/OpenOmics/mr-seek/actions/workflows/docs.yml) [![GitHub issues](https://img.shields.io/github/issues/OpenOmics/mr-seek?color=brightgreen)](https://github.com/OpenOmics/mr-seek/issues)  [![GitHub license](https://img.shields.io/github/license/OpenOmics/mr-seek)](https://github.com/OpenOmics/mr-seek/blob/main/LICENSE) 
   
   <i>
     This is the home of the pipeline, mr-seek. Its long-term goals: to perform Mendelian randomization analysis like no pipeline before!
