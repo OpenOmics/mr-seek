@@ -43,9 +43,9 @@ process_exposure <- function(x) {
 
     exposure_dat <- format_data(exp, type="exposure",
                                 snp_col = "rsID",
-                                beta_col = grep('BETA', discovery, ignore.case=TRUE, value=TRUE),
-                                se_col = grep('SE', discovery, ignore.case=TRUE, value=TRUE),
-                                eaf_col = grep('A1FREQ', discovery, ignore.case=TRUE, value=TRUE),
+                                beta_col = grep('BETA', discovery, ignore.case=TRUE, value=TRUE)[[1]],
+                                se_col = grep('SE', discovery, ignore.case=TRUE, value=TRUE)[[1]],
+                                eaf_col = grep('A1FREQ', discovery, ignore.case=TRUE, value=TRUE)[[1]],
                                 effect_allele_col = "A1",
                                 other_allele_col = "A0",
                                 chr_col = 'Chromosome',
@@ -60,10 +60,10 @@ process_exposure <- function(x) {
     exp$SE <- exp[,grep('Fx', colnames(exp), ignore.case=TRUE, value=TRUE)] / exp$T
     exp$log10P <- -exp$log10P
     exposure_dat <- format_data(exp, type="exposure",
-                                snp_col = grep("RSID", colnames(exp), ignore.case=TRUE, value=TRUE),
-                                beta_col = grep('Fx', colnames(exp), ignore.case=TRUE, value=TRUE),
-                                se_col = grep('^SE', colnames(exp), ignore.case=TRUE, value=TRUE),
-                                eaf_col = grep('EAF', colnames(exp), ignore.case=TRUE, value=TRUE),
+                                snp_col = grep("RSID", colnames(exp), ignore.case=TRUE, value=TRUE)[[length(grep("RSID", colnames(exp), ignore.case=TRUE, value=TRUE))]],
+                                beta_col = grep('Fx', colnames(exp), ignore.case=TRUE, value=TRUE)[[1]],
+                                se_col = grep('^SE', colnames(exp), ignore.case=TRUE, value=TRUE)[[1]],
+                                eaf_col = grep('EAF', colnames(exp), ignore.case=TRUE, value=TRUE)[[1]],
                                 effect_allele_col = "A1",
                                 other_allele_col = "A0",
                                 chr_col = 'Chromosome',
@@ -84,6 +84,7 @@ process_exposure <- function(x) {
       force_server = FALSE #Force the analysis to extract results from the server rather than the MRInstruments package
     )
   } else {
+    print("Current exposure input format not handled, please double-check input or reach out for assistance")
     stop("Current exposure input format not handled, please double-check input or reach out for assistance")
   }
   return(exposure_dat)
