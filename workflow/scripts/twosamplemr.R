@@ -289,37 +289,42 @@ for (i in names(p1)) {
 res_single <- mr_singlesnp(dat)
 write.table(res_single, 'res_single.tsv', sep='\t', row.names=FALSE)
 
-p2 <- mr_forest_plot(res_single)
-dir.create(file.path('singlesnp_forest'), showWarnings = FALSE)
-for (i in names(p2)) {
-  ids <- strsplit(i, '\\.')[[1]]
-  if (length(which(res_single[,'id.exposure'] == ids[1] & res_single[, 'id.outcome'] == ids[2])) > 3) {
-    png(file.path('singlesnp_forest', paste0(i, '.png')))
-    print(p2[[i]])
-    dev.off()
-  }
-}
+try({
+    p2 <- mr_forest_plot(res_single)
+    dir.create(file.path('singlesnp_forest'), showWarnings = FALSE)
+    for (i in names(p2)) {
+      ids <- strsplit(i, '\\.')[[1]]
+      if (length(which(res_single[,'id.exposure'] == ids[1] & res_single[, 'id.outcome'] == ids[2])) > 3) {
+        png(file.path('singlesnp_forest', paste0(i, '.png')))
+        print(p2[[i]])
+        dev.off()
+      }
+    }
+})
 
 ## Leave one out analysis
 res_loo <- mr_leaveoneout(dat)
 write.table(res_loo, 'res_loo.tsv', sep='\t', row.names=FALSE)
-dir.create(file.path('leaveoneout'), showWarnings = FALSE)
-p3 <- mr_leaveoneout_plot(res_loo)
-for (i in names(p3)) {
-  png(file.path('leaveoneout', paste0(i, '.png')))
-  print(p3[[i]])
-  dev.off()
-}
-
+try({
+  dir.create(file.path('leaveoneout'), showWarnings = FALSE)
+  p3 <- mr_leaveoneout_plot(res_loo)
+  for (i in names(p3)) {
+    png(file.path('leaveoneout', paste0(i, '.png')))
+    print(p3[[i]])
+    dev.off()
+  }
+})
 
 ## Funnel plot
-p4 <- mr_funnel_plot(res_single)
-dir.create(file.path('singlesnp_funnel'), showWarnings = FALSE)
-for (i in names(p4)) {
-  png(file.path('singlesnp_funnel', paste0(i, '.png')))
-  print(p4[[i]])
-  dev.off()
-}
+try({
+  p4 <- mr_funnel_plot(res_single)
+  dir.create(file.path('singlesnp_funnel'), showWarnings = FALSE)
+  for (i in names(p4)) {
+    png(file.path('singlesnp_funnel', paste0(i, '.png')))
+    print(p4[[i]])
+    dev.off()
+  }
+})
 
 sink('twosamplemr_session.log')
 sessionInfo()
