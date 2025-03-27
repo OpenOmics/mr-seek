@@ -4,7 +4,7 @@
   
   **_Mendelian randomization pipeline_**
 
-  [![Docker Pulls](https://img.shields.io/docker/pulls/skchronicles/mr-seek)](https://hub.docker.com/repository/docker/skchronicles/mr-seek) [![tests](https://github.com/OpenOmics/mr-seek/workflows/tests/badge.svg)](https://github.com/OpenOmics/mr-seek/actions/workflows/main.yaml) [![docs](https://github.com/OpenOmics/mr-seek/workflows/docs/badge.svg)](https://github.com/OpenOmics/mr-seek/actions/workflows/docs.yml) [![GitHub issues](https://img.shields.io/github/issues/OpenOmics/mr-seek?color=brightgreen)](https://github.com/OpenOmics/mr-seek/issues)  [![GitHub license](https://img.shields.io/github/license/OpenOmics/mr-seek)](https://github.com/OpenOmics/mr-seek/blob/main/LICENSE) 
+  [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.15096585.svg)](https://doi.org/10.5281/zenodo.15096585) [![GitHub release (latest SemVer including pre-releases)](https://img.shields.io/github/v/release/OpenOmics/mr-seek?color=blue&include_prereleases)](https://github.com/OpenOmics/mr-seek/releases) [![Docker Pulls](https://img.shields.io/docker/pulls/skchronicles/mr-seek)](https://hub.docker.com/repository/docker/skchronicles/mr-seek) <br> [![tests](https://github.com/OpenOmics/mr-seek/workflows/tests/badge.svg)](https://github.com/OpenOmics/mr-seek/actions/workflows/main.yaml) [![docs](https://github.com/OpenOmics/mr-seek/workflows/docs/badge.svg)](https://github.com/OpenOmics/mr-seek/actions/workflows/docs.yml) [![GitHub issues](https://img.shields.io/github/issues/OpenOmics/mr-seek?color=brightgreen)](https://github.com/OpenOmics/mr-seek/issues)  [![GitHub license](https://img.shields.io/github/license/OpenOmics/mr-seek)](https://github.com/OpenOmics/mr-seek/blob/main/LICENSE) 
   
   <i>
     This is the home of the pipeline, mr-seek. Its long-term goals: to perform Mendelian randomization analysis like no pipeline before!
@@ -29,7 +29,7 @@ Before getting started, we highly recommend reading through the [usage](https://
 For more information about issues or trouble-shooting a problem, please checkout our [FAQ](https://openomics.github.io/mr-seek/faq/questions/) prior to [opening an issue on Github](https://github.com/OpenOmics/mr-seek/issues).
 
 ## Dependencies
-**Requires:** `singularity>=3.5`  `snakemake>=6.0`
+**Requires:** `singularity>=3.5`  `snakemake<=7.32.4`
 
 At the current moment, the pipeline uses a mixture of enviroment modules and docker images; however, this will be changing soon! In the very near future, the pipeline will only use docker images. With that being said, [snakemake](https://snakemake.readthedocs.io/en/stable/getting_started/installation.html) and [singularity](https://singularity.lbl.gov/all-releases) must be installed on the target system. Snakemake orchestrates the execution of each step in the pipeline. To guarantee the highest level of reproducibility, each step of the pipeline will rely on versioned images from [DockerHub](https://hub.docker.com/orgs/nciccbr/repositories). Snakemake uses singularity to pull these images onto the local filesystem prior to job execution, and as so, snakemake and singularity will be the only two dependencies in the future.
 
@@ -49,6 +49,41 @@ module load snakemake singularity
 
 ## Contribute 
 This site is a living document, created for and by members like you. mr-seek is maintained by the members of OpenOmics and is improved by continuous feedback! We encourage you to contribute new content and make improvements to existing content via pull request to our [GitHub repository](https://github.com/OpenOmics/mr-seek).
+
+## Cite
+
+If you use this software, please cite it as below:  
+
+<details>
+  <summary><b><i>@BibText</i></b></summary>
+ 
+```text
+@software{Chen_Kuhn_OpenOmics_mr-seek_2025,
+  author       = {Chen, Vicky and
+                  Kuhn, Skyler and
+                  Paul, Subrata and
+                  Redekar, Neelam},
+  title        = {OpenOmics/mr-seek},
+  month        = mar,
+  year         = 2025,
+  publisher    = {Zenodo},
+  doi          = {10.5281/zenodo.15096585},
+  url          = {https://doi.org/10.5281/zenodo.15096585}
+}
+```
+
+</details>
+
+<details>
+  <summary><b><i>@APA</i></b></summary>
+
+```text
+Chen, V., Kuhn, S., Paul, S., & Redekar, N. (2025). OpenOmics/mr-seek. Zenodo. https://doi.org/10.5281/zenodo.15096585
+```
+
+</details>
+
+For more citation style options, please visit the pipeline's [Zenodo page](https://doi.org/10.5281/zenodo.15096585).
 
 ## References
 <sup>**1.**  Kurtzer GM, Sochat V, Bauer MW (2017). Singularity: Scientific containers for mobility of compute. PLoS ONE 12(5): e0177459.</sup>  
