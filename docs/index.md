@@ -3,6 +3,15 @@
   <h1 style="font-size: 250%">mr-seek 🔬</h1>
 
   <b><i>Mendelian randomization pipeline</i></b><br> 
+  <a href="https://doi.org/10.5281/zenodo.15096585">
+      <img src="https://zenodo.org/badge/DOI/10.5281/zenodo.15096585.svg" alt="DOI">
+  </a>
+  <a href="https://github.com/OpenOmics/mr-seek/releases">
+    <img alt="GitHub release" src="https://img.shields.io/github/v/release/OpenOmics/mr-seek?color=blue&include_prereleases">
+  </a>
+  <a href="https://hub.docker.com/repository/docker/skchronicles/mr-seek">
+    <img alt="Docker Pulls" src="https://img.shields.io/docker/pulls/skchronicles/mr-seek">
+  </a><br>
   <a href="https://github.com/OpenOmics/mr-seek/actions/workflows/main.yaml">
     <img alt="tests" src="https://github.com/OpenOmics/mr-seek/workflows/tests/badge.svg">
   </a>
@@ -44,6 +53,34 @@ For more information about issues or trouble-shooting a problem, please checkout
 
 This site is a living document, created for and by members like you. mr-seek is maintained by the members of NCBR and is improved by continuous feedback! We encourage you to contribute new content and make improvements to existing content via pull request to our [GitHub repository :octicons-heart-fill-24:{ .heart }](https://github.com/OpenOmics/mr-seek).
 
+## Citation
+
+If you use this software, please cite it as below:  
+
+=== "BibTex"
+
+    ```
+    @software{Chen_Kuhn_OpenOmics_mr-seek_2025,
+      author       = {Chen, Vicky and
+                      Kuhn, Skyler and
+                      Paul, Subrata and
+                      Redekar, Neelam},
+      title        = {OpenOmics/mr-seek},
+      month        = mar,
+      year         = 2025,
+      publisher    = {Zenodo},
+      doi          = {10.5281/zenodo.15096585},
+      url          = {https://doi.org/10.5281/zenodo.15096585}
+    }
+    ```
+
+=== "APA"
+
+    ```
+    Chen, V., Kuhn, S., Paul, S., & Redekar, N. (2025). OpenOmics/mr-seek. Zenodo. https://doi.org/10.5281/zenodo.15096585
+    ```
+
+For more citation style options, please visit the pipeline's [Zenodo page](https://doi.org/10.5281/zenodo.15096585).
 
 ## References
 <sup>**1.**  Kurtzer GM, Sochat V, Bauer MW (2017). Singularity: Scientific containers for mobility of compute. PLoS ONE 12(5): e0177459.</sup>  
